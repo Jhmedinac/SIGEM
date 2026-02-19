@@ -1,0 +1,456 @@
+/* ====================================================================================
+   SISTEMA: SIGECAP 
+   DESCRIPCI?N: Versi?n final optimizada para alta concurrencia.
+   CAMBIOS v6.0: 
+     - Eliminaci?n de CHECK constraints con UDFs (Mejora de rendimiento).
+     - Implementaci?n de ROWVERSION para control optimista.
+     - Reemplazo de MERGE por Patr?n UPSERT cl?sico.
+     - Vistas blindadas con DISTINCT.
+   ==================================================================================== */
+
+USE [master];
+GO
+
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'SIGECAP_dev')
+BEGIN
+    ALTER DATABASE [SIGECAP_dev] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE [SIGECAP_dev];
+END
+GO
+
+CREATE DATABASE [SIGECAP_dev] COLLATE Modern_Spanish_CI_AS;
+GO
+
+USE [SIGECAP_dev];
+GO
+
+-- SNAPSHOT ISOLATION (Lecturas no bloqueantes)
+ALTER DATABASE [SIGECAP_dev] SET ALLOW_SNAPSHOT_ISOLATION ON;
+ALTER DATABASE [SIGECAP_dev] SET READ_COMMITTED_SNAPSHOT ON;
+GO
+
+SET XACT_ABORT ON;
+GO
+
+/* ============================================================
+   1. ESQUEMAS
+   ============================================================ */
+CREATE SCHEMA core;
+CREATE SCHEMA cat;
+CREATE SCHEMA op;
+CREATE SCHEMA sec;
+CREATE SCHEMA sec_rls;
+GO
+
+-- Filegroups y Particionamiento (Simulado)
+CREATE PARTITION FUNCTION pf_historial_anual (DATETIME2(3))
+AS RANGE RIGHT FOR VALUES ('2025-01-01', '2026-01-01', '2027-01-01');
+
+CREATE PARTITION SCHEME ps_historial_anual
+AS PARTITION pf_historial_anual ALL TO ([PRIMARY]);
+GO
+
+/* ============================================================
+   2. CAT?LOGOS
+   ============================================================ */
+CREATE TABLE cat.estado_inscripcion (
+    id_estado_inscripcion INT IDENTITY(1,1) PRIMARY KEY,
+    codigo VARCHAR(20) NOT NULL UNIQUE,
+    nombre VARCHAR(50) NOT NULL,
+    is_deleted BIT DEFAULT 0,
+    rv ROWVERSION -- Control de concurrencia
+);
+
+CREATE TABLE cat.estado_asistencia (
+    id_estado_asistencia INT IDENTITY(1,1) PRIMARY KEY,
+    codigo CHAR(1) NOT NULL UNIQUE, 
+    nombre VARCHAR(50) NOT NULL,
+    peso_valor DECIMAL(3,2) DEFAULT 1.0, 
+    is_deleted BIT DEFAULT 0,
+    rv ROWVERSION,
+    CONSTRAINT CK_estado_asistencia_peso CHECK (peso_valor BETWEEN 0 AND 1)
+);
+
+CREATE TABLE cat.tipo_evento (
+    id_tipo_evento INT IDENTITY(1,1) PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    is_deleted BIT DEFAULT 0
+);
+
+CREATE TABLE cat.modalidad (
+    id_modalidad INT IDENTITY(1,1) PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL UNIQUE,
+    is_deleted BIT DEFAULT 0
+);
+
+CREATE TABLE cat.estado_evento (
+    id_estado INT IDENTITY(1,1) PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL UNIQUE,
+    is_deleted BIT DEFAULT 0
+);
+
+CREATE TABLE cat.salon (
+    id_salon INT IDENTITY(1,1) PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    capacidad_maxima INT NOT NULL CHECK (capacidad_maxima > 0),
+    is_deleted BIT DEFAULT 0,
+    rv ROWVERSION
+);
+
+CREATE TABLE cat.recurso (
+    id_recurso INT IDENTITY(1,1) PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    estado VARCHAR(20) DEFAULT 'DISPONIBLE',
+    is_deleted BIT DEFAULT 0,
+    rv ROWVERSION
+);
+
+/* ============================================================
+   3. CORE
+   ============================================================ */
+CREATE TABLE core.persona (
+    id_persona INT IDENTITY(1,1) PRIMARY KEY,
+    identificacion VARCHAR(20) NOT NULL UNIQUE,
+    nombres VARCHAR(100) NOT NULL,
+    apellidos VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    created_at DATETIME2(3) DEFAULT SYSDATETIME(),
+    is_deleted BIT DEFAULT 0,
+    rv ROWVERSION
+);
+CREATE UNIQUE NONCLUSTERED INDEX IX_persona_email_active ON core.persona(email) WHERE is_deleted = 0;
+
+CREATE TABLE sec.usuario (
+    id_usuario INT IDENTITY(1,1) PRIMARY KEY,
+    id_persona INT NOT NULL,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARBINARY(64) NOT NULL,
+    is_locked BIT DEFAULT 0,
+    created_at DATETIME2(3) DEFAULT SYSDATETIME(),
+    is_deleted BIT DEFAULT 0,
+    rv ROWVERSION,
+    CONSTRAINT FK_usuario_persona FOREIGN KEY (id_persona) REFERENCES core.persona(id_persona)
+);
+
+CREATE TABLE core.facilitador (
+    id_facilitador INT IDENTITY(1,1) PRIMARY KEY,
+    id_persona INT NOT NULL,
+    tipo VARCHAR(20) CHECK (tipo IN ('INTERNO','EXTERNO')),
+    is_deleted BIT DEFAULT 0,
+    rv ROWVERSION,
+    CONSTRAINT FK_facilitador_persona FOREIGN KEY (id_persona) REFERENCES core.persona(id_persona)
+);
+
+/* ============================================================
+   4. OPERACIONES: EVENTOS
+   ============================================================ */
+CREATE TABLE op.evento (
+    id_evento INT IDENTITY(1,1) PRIMARY KEY,
+    codigo_evento VARCHAR(30) NOT NULL UNIQUE,
+    nombre_evento VARCHAR(200) NOT NULL,
+    
+    id_tipo_evento INT NOT NULL,
+    id_modalidad INT NOT NULL,
+    id_estado INT NOT NULL,
+    id_salon INT NULL,
+    id_facilitador INT NULL,
+
+    fecha_inicio DATETIME2(0) NOT NULL,
+    fecha_fin DATETIME2(0) NOT NULL,
+    
+    cupo_maximo INT NOT NULL CHECK (cupo_maximo > 0),
+    cupo_actual INT NOT NULL DEFAULT 0,
+
+    created_at DATETIME2(3) DEFAULT SYSDATETIME(),
+    created_by INT NOT NULL,
+    is_deleted BIT DEFAULT 0,
+    
+    -- MEJORA 4: RowVersion para concurrencia optimista
+    rv ROWVERSION,
+
+    CONSTRAINT CK_cupo_valido CHECK (cupo_actual <= cupo_maximo),
+    CONSTRAINT CK_fechas_validas CHECK (fecha_fin >= fecha_inicio),
+
+    CONSTRAINT FK_evento_estado FOREIGN KEY (id_estado) REFERENCES cat.estado_evento(id_estado),
+    CONSTRAINT FK_evento_salon FOREIGN KEY (id_salon) REFERENCES cat.salon(id_salon),
+    CONSTRAINT FK_evento_facil FOREIGN KEY (id_facilitador) REFERENCES core.facilitador(id_facilitador)
+);
+CREATE NONCLUSTERED INDEX IX_evento_fechas_active ON op.evento(fecha_inicio, fecha_fin) INCLUDE (id_estado) WHERE is_deleted = 0;
+
+/* ============================================================
+   5. OPERACIONES: SESIONES
+   ============================================================ */
+CREATE TABLE op.evento_sesion (
+    id_sesion INT IDENTITY(1,1) PRIMARY KEY,
+    id_evento INT NOT NULL,
+    
+    nombre_sesion VARCHAR(100) NULL,
+    fecha_sesion DATE NOT NULL,
+    hora_inicio TIME(0) NOT NULL,
+    hora_fin TIME(0) NOT NULL,
+    
+    id_facilitador INT NULL,
+    id_salon INT NULL,
+
+    created_at DATETIME2(3) DEFAULT SYSDATETIME(),
+    created_by INT NOT NULL,
+    is_deleted BIT DEFAULT 0,
+    rv ROWVERSION,
+
+    CONSTRAINT FK_sesion_evento FOREIGN KEY (id_evento) REFERENCES op.evento(id_evento),
+    CONSTRAINT CK_sesion_horas CHECK (hora_fin > hora_inicio),
+    
+    -- MEJORA 1: Eliminamos el CHECK con UDF para evitar cuellos de botella.
+    -- La validaci?n se har? en el SP usp_generar_sesiones_diarias.
+
+    CONSTRAINT UQ_sesion_evento UNIQUE (id_sesion, id_evento)
+);
+CREATE INDEX IX_sesion_facilitador ON op.evento_sesion(id_facilitador);
+CREATE INDEX IX_sesion_salon ON op.evento_sesion(id_salon);
+
+/* ============================================================
+   6. INSCRIPCIONES
+   ============================================================ */
+CREATE TABLE op.inscripcion (
+    id_inscripcion INT IDENTITY(1,1) PRIMARY KEY,
+    id_evento INT NOT NULL,
+    id_persona INT NOT NULL,
+    id_estado_inscripcion INT NOT NULL, 
+    
+    nota_final DECIMAL(4,2) NULL CHECK (nota_final BETWEEN 0 AND 10),
+    
+    created_at DATETIME2(3) DEFAULT SYSDATETIME(),
+    created_by INT NOT NULL,
+    is_deleted BIT DEFAULT 0,
+    rv ROWVERSION,
+
+    CONSTRAINT UQ_inscripcion_unica UNIQUE(id_evento, id_persona),
+    CONSTRAINT FK_insc_evento FOREIGN KEY (id_evento) REFERENCES op.evento(id_evento),
+    CONSTRAINT FK_insc_persona FOREIGN KEY (id_persona) REFERENCES core.persona(id_persona),
+    CONSTRAINT FK_insc_estado FOREIGN KEY (id_estado_inscripcion) REFERENCES cat.estado_inscripcion(id_estado_inscripcion)
+);
+CREATE UNIQUE NONCLUSTERED INDEX UQ_inscripcion_compuesta ON op.inscripcion(id_inscripcion, id_evento);
+
+/* ============================================================
+   7. ASISTENCIA DETALLADA
+   ============================================================ */
+CREATE TABLE op.asistencia_detalle (
+    id_asistencia INT IDENTITY(1,1) PRIMARY KEY,
+    id_sesion INT NOT NULL,
+    id_inscripcion INT NOT NULL,
+    id_evento INT NOT NULL, 
+    
+    id_estado_asistencia INT NOT NULL,
+    observacion VARCHAR(200) NULL,
+
+    created_at DATETIME2(3) DEFAULT SYSDATETIME(),
+    created_by INT NOT NULL,
+    updated_at DATETIME2(3) NULL, 
+    updated_by INT NULL,
+    rv ROWVERSION,
+
+    CONSTRAINT FK_asist_estado FOREIGN KEY (id_estado_asistencia) REFERENCES cat.estado_asistencia(id_estado_asistencia),
+    
+    -- Integridad de Diamante (FKs Compuestas)
+    CONSTRAINT FK_asist_sesion_compuesta 
+        FOREIGN KEY (id_sesion, id_evento) REFERENCES op.evento_sesion(id_sesion, id_evento),
+    CONSTRAINT FK_asist_inscripcion_compuesta 
+        FOREIGN KEY (id_inscripcion, id_evento) REFERENCES op.inscripcion(id_inscripcion, id_evento),
+    
+    CONSTRAINT UQ_asistencia_unica UNIQUE(id_sesion, id_inscripcion)
+);
+CREATE NONCLUSTERED INDEX IX_asist_reporte ON op.asistencia_detalle(id_sesion, id_inscripcion) INCLUDE (id_estado_asistencia);
+
+/* ============================================================
+   8. AUDITOR?A Y SEGURIDAD
+   ============================================================ */
+CREATE TABLE sec.audit_log (
+    id_log BIGINT IDENTITY(1,1) PRIMARY KEY,
+    nombre_tabla VARCHAR(100),
+    tipo_accion CHAR(1),
+    valor_anterior NVARCHAR(MAX),
+    valor_nuevo NVARCHAR(MAX),
+    usuario_db NVARCHAR(100) DEFAULT SUSER_NAME(),
+    fecha DATETIME2(3) DEFAULT SYSDATETIME()
+);
+
+CREATE TABLE op.evento_estado_historial (
+    id_historial INT IDENTITY(1,1),
+    id_evento INT NOT NULL,
+    id_estado_new INT NOT NULL,
+    fecha_cambio DATETIME2(3) DEFAULT SYSDATETIME(),
+    usuario_id INT NOT NULL,
+    CONSTRAINT PK_historial PRIMARY KEY (id_historial, fecha_cambio)
+) ON ps_historial_anual(fecha_cambio);
+GO
+
+-- Trigger Auditor?a
+CREATE OR ALTER TRIGGER op.trg_audit_evento
+ON op.evento
+AFTER UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Accion CHAR(1) = 'U';
+    IF NOT EXISTS(SELECT * FROM inserted) SET @Accion = 'D';
+
+    INSERT INTO sec.audit_log (nombre_tabla, tipo_accion, valor_anterior, valor_nuevo)
+    SELECT 'op.evento', @Accion,
+        (SELECT * FROM deleted FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+        (SELECT * FROM inserted FOR JSON PATH, WITHOUT_ARRAY_WRAPPER);
+END;
+GO
+
+-- RLS
+CREATE FUNCTION sec_rls.fn_seguridad_eventos(@id_facilitador INT)
+RETURNS TABLE WITH SCHEMABINDING
+AS
+RETURN SELECT 1 AS acceso_result
+WHERE CAST(SESSION_CONTEXT(N'AppRole') AS VARCHAR(20)) = 'AppAdmin'
+   OR @id_facilitador = CAST(SESSION_CONTEXT(N'UserId') AS INT)
+   OR @id_facilitador IS NULL;
+GO
+
+CREATE SECURITY POLICY sec_rls.pol_acceso_eventos
+ADD FILTER PREDICATE sec_rls.fn_seguridad_eventos(id_facilitador) ON op.evento
+WITH (STATE = ON);
+GO
+
+/* ============================================================
+   9. STORED PROCEDURES (OPTIMIZADOS)
+   ============================================================ */
+GO
+
+-- 9.1 Generar Sesiones (Con validaci?n interna de fechas para reemplazar el CHECK eliminado)
+CREATE OR ALTER PROCEDURE op.usp_generar_sesiones_diarias
+    @id_evento INT,
+    @usuario_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+            
+            IF NOT EXISTS (SELECT 1 FROM op.evento WHERE id_evento = @id_evento AND is_deleted = 0)
+                ;THROW 50001, 'El evento no existe.', 1;
+
+            DECLARE @f_inicio DATE, @f_fin DATE, @h_inicio TIME, @h_fin TIME;
+            SELECT @f_inicio = CAST(fecha_inicio AS DATE), @f_fin = CAST(fecha_fin AS DATE),
+                   @h_inicio = CAST(fecha_inicio AS TIME), @h_fin = CAST(fecha_fin AS TIME)
+            FROM op.evento WHERE id_evento = @id_evento;
+
+            ;WITH Fechas AS (
+                SELECT @f_inicio AS fecha
+                UNION ALL
+                SELECT DATEADD(DAY, 1, fecha) FROM Fechas WHERE fecha < @f_fin
+            )
+            INSERT INTO op.evento_sesion (id_evento, fecha_sesion, hora_inicio, hora_fin, created_by)
+            SELECT @id_evento, fecha, @h_inicio, @h_fin, @usuario_id
+            FROM Fechas
+            WHERE (DATEPART(WEEKDAY, fecha) + @@DATEFIRST - 1) % 7 NOT IN (5, 6)
+              AND NOT EXISTS (SELECT 1 FROM op.evento_sesion WHERE id_evento = @id_evento AND fecha_sesion = Fechas.fecha)
+              -- Validaci?n impl?cita: El CTE solo genera fechas dentro del rango
+            OPTION (MAXRECURSION 1000);
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        ;THROW;
+    END CATCH
+END
+GO
+
+-- 9.2 Registrar Asistencia (MEJORA 2: UPSERT CL?SICO, SIN MERGE)
+CREATE OR ALTER PROCEDURE op.usp_registrar_asistencia
+    @id_sesion INT,
+    @id_inscripcion INT,
+    @codigo_asistencia CHAR(1),
+    @observacion VARCHAR(200) = NULL,
+    @usuario_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+    SET TRANSACTION ISOLATION LEVEL SERIALIZABLE; -- Bloqueo fuerte para evitar race conditions en Upsert
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+            -- Validar Diamante
+            DECLARE @id_evento_sesion INT, @id_evento_insc INT;
+            SELECT @id_evento_sesion = id_evento FROM op.evento_sesion WHERE id_sesion = @id_sesion;
+            SELECT @id_evento_insc = id_evento FROM op.inscripcion WHERE id_inscripcion = @id_inscripcion;
+
+            IF @id_evento_sesion <> @id_evento_insc
+                ;THROW 50007, 'Inconsistencia: Inscripci?n no pertenece al evento de la sesi?n.', 1;
+
+            DECLARE @id_estado_asist INT;
+            SELECT @id_estado_asist = id_estado_asistencia FROM cat.estado_asistencia WHERE codigo = @codigo_asistencia;
+
+            -- PATR?N UPSERT CL?SICO (M?s seguro que MERGE)
+            UPDATE op.asistencia_detalle
+            SET id_estado_asistencia = @id_estado_asist,
+                observacion = @observacion,
+                updated_by = @usuario_id,
+                updated_at = SYSDATETIME()
+            WHERE id_sesion = @id_sesion AND id_inscripcion = @id_inscripcion;
+
+            IF @@ROWCOUNT = 0
+            BEGIN
+                INSERT INTO op.asistencia_detalle 
+                (id_sesion, id_inscripcion, id_evento, id_estado_asistencia, observacion, created_by)
+                VALUES 
+                (@id_sesion, @id_inscripcion, @id_evento_sesion, @id_estado_asist, @observacion, @usuario_id);
+            END
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        ;THROW;
+    END CATCH
+END
+GO
+
+/* ============================================================
+   10. VISTAS DE NEGOCIO
+   ============================================================ */
+GO
+CREATE OR ALTER VIEW op.vw_asistencia_resumen
+AS
+SELECT 
+    i.id_inscripcion,
+    i.id_evento,
+    
+    -- MEJORA 3: COUNT DISTINCT para protecci?n contra duplicados fantasmas
+    COUNT(DISTINCT s.id_sesion) AS sesiones_totales,
+    
+    SUM(ISNULL(ea.peso_valor, 0)) AS puntaje_asistencia,
+    CAST(CASE WHEN COUNT(DISTINCT s.id_sesion) = 0 THEN 0 
+         ELSE (SUM(ISNULL(ea.peso_valor, 0)) / COUNT(DISTINCT s.id_sesion)) * 100 END AS DECIMAL(5,2)) AS porcentaje
+FROM op.inscripcion i
+JOIN op.evento_sesion s ON i.id_evento = s.id_evento AND s.is_deleted = 0
+LEFT JOIN op.asistencia_detalle ad ON s.id_sesion = ad.id_sesion AND i.id_inscripcion = ad.id_inscripcion
+LEFT JOIN cat.estado_asistencia ea ON ad.id_estado_asistencia = ea.id_estado_asistencia
+WHERE i.is_deleted = 0
+GROUP BY i.id_inscripcion, i.id_evento;
+GO
+
+/* ============================================================
+   11. PERMISOS
+   ============================================================ */
+IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'app_role_write') CREATE ROLE app_role_write;
+
+GRANT INSERT, UPDATE ON SCHEMA::op TO app_role_write;
+GRANT INSERT, UPDATE ON SCHEMA::core TO app_role_write;
+DENY DELETE ON SCHEMA::op TO app_role_write; -- PROHIBIDO HARD DELETE
+DENY DELETE ON SCHEMA::core TO app_role_write;
+GO
+
+PRINT '=======================================================';
+PRINT '  SIGECAP ENTERPRISE v6.0 (PLATINUM) DEPLOYED';
+PRINT '  - MERGE eliminado. CHECK escalares eliminados.';
+PRINT '  - ROWVERSION activado. Vistas protegidas.';
+PRINT '=======================================================';

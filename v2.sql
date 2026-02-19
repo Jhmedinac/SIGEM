@@ -1,0 +1,79 @@
+USE [SIGECAP_dev];
+GO
+
+/* ============================================================
+   1. SP: GENERAR SESIONES (Con TRY/CATCH)
+   ============================================================ */
+CREATE OR ALTER PROCEDURE op.usp_generar_sesiones_diarias
+    @id_evento INT,
+    @usuario_id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+            -- 1. Validar que el evento exista y esté activo
+            IF NOT EXISTS (SELECT 1 FROM op.evento WHERE id_evento = @id_evento AND is_deleted = 0)
+            BEGIN
+                ;THROW 50001, 'El evento no existe o fue eliminado.', 1;
+            END
+
+            -- 2. Obtener fechas
+            DECLARE @f_inicio DATE, @f_fin DATE, @h_inicio TIME, @h_fin TIME;
+            
+            SELECT @f_inicio = CAST(fecha_inicio AS DATE), 
+                   @f_fin = CAST(fecha_fin AS DATE),
+                   @h_inicio = CAST(fecha_inicio AS TIME),
+                   @h_fin = CAST(fecha_fin AS TIME)
+            FROM op.evento WHERE id_evento = @id_evento;
+
+            -- 3. Generar sesiones (CTE Recursivo)
+            ;WITH Fechas AS (
+                SELECT @f_inicio AS fecha
+                UNION ALL
+                SELECT DATEADD(DAY, 1, fecha)
+                FROM Fechas
+                WHERE fecha < @f_fin
+            )
+            INSERT INTO op.evento_sesion (id_evento, fecha_sesion, hora_inicio, hora_fin, created_by)
+            SELECT @id_evento, fecha, @h_inicio, @h_fin, @usuario_id
+            FROM Fechas
+            WHERE 
+                -- Lunes a Viernes (Ajustar según @@DATEFIRST si es necesario, aquí fórmula universal)
+                (DATEPART(WEEKDAY, fecha) + @@DATEFIRST - 1) % 7 NOT IN (5, 6)
+                -- Idempotencia: No insertar si ya existe sesión ese día
+                AND NOT EXISTS (
+                    SELECT 1 FROM op.evento_sesion es 
+                    WHERE es.id_evento = @id_evento AND es.fecha_sesion = Fechas.fecha
+                )
+            OPTION (MAXRECURSION 1000);
+
+        COMMIT TRANSACTION;
+        PRINT 'Sesiones generadas correctamente.';
+
+    END TRY
+    BEGIN CATCH
+        -- Manejo de Errores Robusto
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+
+        -- Opcional: Guardar en tabla de log de errores aquí
+        -- INSERT INTO sec.error_log ...
+        
+        -- Relanzar error original
+        ;THROW;
+    END CATCH
+END
+GO
+
+/* ============================================================
+   2. SP: INSCRIBIR PARTICIPANTE (Adaptado a v5.0)
+   ============================================================ */
+CREATE OR ALTER PROCEDURE op.usp_inscribir_participante
+    @id_evento INT,
+    @id_persona INT,
+    @usuario_id INT
+AS
+BEGIN
