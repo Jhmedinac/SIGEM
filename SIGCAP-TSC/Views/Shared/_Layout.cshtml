@@ -1,0 +1,148 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SIGCAP_TSC</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    @if (User.Identity.IsAuthenticated)
+    {
+        var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+        var action = ViewContext.RouteData.Values["action"]?.ToString();
+
+        <!-- Sidebar Lateral -->
+        <aside class="w-24 bg-white shadow-xl flex flex-col items-center py-6 z-20 overflow-y-auto hidden sm:flex">
+            <!-- Logo -->
+            <div class="mb-8">
+                <div class="bg-indigo-600 p-2 rounded-lg shadow-lg">
+                    <i data-lucide="landmark" class="h-8 w-8 text-white"></i>
+                </div>
+            </div>
+
+            <!-- Menu Items -->
+            <nav class="flex-1 w-full space-y-4 px-2">
+                <!-- Dashboard -->
+                <a href="@Url.Action("Index", "Dashboard")" class="flex flex-col items-center justify-center w-full py-3 rounded-xl transition-all duration-200 group relative @(controller == "Dashboard" ? "bg-indigo-50 text-indigo-600" : "text-gray-400 hover:bg-gray-50 hover:text-indigo-500")">
+                    <div class="relative p-2 rounded-lg mb-1 @(controller == "Dashboard" ? "bg-indigo-100" : "bg-transparent group-hover:bg-indigo-50")">
+                        <i data-lucide="layout-dashboard" class="h-6 w-6 @(controller == "Dashboard" ? "text-indigo-600" : "text-gray-500 group-hover:text-indigo-600")"></i>
+                    </div>
+                    <span class="text-[10px] font-medium">Dashboard</span>
+                    @if (controller == "Dashboard") { <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-600 rounded-r-md"></div> }
+                </a>
+
+                <!-- Eventos -->
+                <a href="@Url.Action("Index", "Eventos")" class="flex flex-col items-center justify-center w-full py-3 rounded-xl transition-all duration-200 group relative @(controller == "Eventos" ? "bg-indigo-50 text-indigo-600" : "text-gray-400 hover:bg-gray-50 hover:text-indigo-500")">
+                    <div class="relative p-2 rounded-lg mb-1 @(controller == "Eventos" ? "bg-indigo-100" : "bg-transparent group-hover:bg-indigo-50")">
+                        <i data-lucide="graduation-cap" class="h-6 w-6 @(controller == "Eventos" ? "text-indigo-600" : "text-gray-500 group-hover:text-indigo-600")"></i>
+                    </div>
+                    <span class="text-[10px] font-medium">Eventos</span>
+                    @if (controller == "Eventos") { <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-600 rounded-r-md"></div> }
+                </a>
+
+                <!-- Alertas -->
+                <a href="@Url.Action("Index", "Alertas")" class="flex flex-col items-center justify-center w-full py-3 rounded-xl transition-all duration-200 group relative @(controller == "Alertas" ? "bg-indigo-50 text-indigo-600" : "text-gray-400 hover:bg-gray-50 hover:text-indigo-500")">
+                    <div class="relative p-2 rounded-lg mb-1 @(controller == "Alertas" ? "bg-indigo-100" : "bg-transparent group-hover:bg-indigo-50")">
+                        <i data-lucide="bell" class="h-6 w-6 @(controller == "Alertas" ? "text-indigo-600" : "text-gray-500 group-hover:text-indigo-600")"></i>
+                    </div>
+                    <span class="text-[10px] font-medium">Alertas</span>
+                    @if (controller == "Alertas") { <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-600 rounded-r-md"></div> }
+                </a>
+
+                <!-- Salones -->
+                <a href="@Url.Action("Index", "Salones")" class="flex flex-col items-center justify-center w-full py-3 rounded-xl transition-all duration-200 group relative @(controller == "Salones" ? "bg-indigo-50 text-indigo-600" : "text-gray-400 hover:bg-gray-50 hover:text-indigo-500")">
+                    <div class="relative p-2 rounded-lg mb-1 @(controller == "Salones" ? "bg-indigo-100" : "bg-transparent group-hover:bg-indigo-50")">
+                        <i data-lucide="door-open" class="h-6 w-6 @(controller == "Salones" ? "text-indigo-600" : "text-gray-500 group-hover:text-indigo-600")"></i>
+                    </div>
+                    <span class="text-[10px] font-medium">Salones</span>
+                    @if (controller == "Salones") { <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-600 rounded-r-md"></div> }
+                </a>
+
+                <!-- Participantes -->
+                <a href="@Url.Action("Index", "Participantes")" class="flex flex-col items-center justify-center w-full py-3 rounded-xl transition-all duration-200 group relative @(controller == "Participantes" ? "bg-indigo-50 text-indigo-600" : "text-gray-400 hover:bg-gray-50 hover:text-indigo-500")">
+                    <div class="relative p-2 rounded-lg mb-1 @(controller == "Participantes" ? "bg-indigo-100" : "bg-transparent group-hover:bg-indigo-50")">
+                        <i data-lucide="users" class="h-6 w-6 @(controller == "Participantes" ? "text-indigo-600" : "text-gray-500 group-hover:text-indigo-600")"></i>
+                    </div>
+                    <span class="text-[10px] font-medium">Participantes</span>
+                    @if (controller == "Participantes") { <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-600 rounded-r-md"></div> }
+                </a>
+
+                <!-- Usuarios -->
+                <a href="@Url.Action("Index", "Usuarios")" class="flex flex-col items-center justify-center w-full py-3 rounded-xl transition-all duration-200 group relative @(controller == "Usuarios" ? "bg-indigo-50 text-indigo-600" : "text-gray-400 hover:bg-gray-50 hover:text-indigo-500")">
+                    <div class="relative p-2 rounded-lg mb-1 @(controller == "Usuarios" ? "bg-indigo-100" : "bg-transparent group-hover:bg-indigo-50")">
+                        <i data-lucide="shield-check" class="h-6 w-6 @(controller == "Usuarios" ? "text-indigo-600" : "text-gray-500 group-hover:text-indigo-600")"></i>
+                    </div>
+                    <span class="text-[10px] font-medium">Usuarios</span>
+                    @if (controller == "Usuarios") { <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-600 rounded-r-md"></div> }
+                </a>
+                
+                <!-- Facilitadores -->
+                <a href="@Url.Action("Index", "Facilitadores")" class="flex flex-col items-center justify-center w-full py-3 rounded-xl transition-all duration-200 group relative @(controller == "Facilitadores" ? "bg-indigo-50 text-indigo-600" : "text-gray-400 hover:bg-gray-50 hover:text-indigo-500")">
+                    <div class="relative p-2 rounded-lg mb-1 @(controller == "Facilitadores" ? "bg-indigo-100" : "bg-transparent group-hover:bg-indigo-50")">
+                        <i data-lucide="user-cog" class="h-6 w-6 @(controller == "Facilitadores" ? "text-indigo-600" : "text-gray-500 group-hover:text-indigo-600")"></i>
+                    </div>
+                    <span class="text-[10px] font-medium">Facilitadores</span>
+                    @if (controller == "Facilitadores") { <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-600 rounded-r-md"></div> }
+                </a>
+            </nav>
+
+            <!-- Logout -->
+            <div class="mt-auto px-2 w-full">
+                <form method="post" asp-controller="Auth" asp-action="Logout" class="w-full">
+                    <button type="submit" class="flex flex-col items-center justify-center w-full py-3 text-gray-400 hover:bg-red-50 hover:text-red-500 rounded-xl transition-all">
+                        <i data-lucide="log-out" class="h-6 w-6 mb-1"></i>
+                        <span class="text-[10px] font-medium">Cerrar Sesión</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Navbar Superior (Header) -->
+            <header class="bg-white shadow-sm z-10">
+                <div class="flex h-16 items-center justify-between px-6 lg:px-8">
+                    <h2 class="text-xl font-bold text-gray-800">@ViewData["Title"]</h2>
+
+                    <div class="flex items-center gap-4">
+                        <!-- ViewComponent de Notificaciones -->
+                        @await Component.InvokeAsync("NotificationBadge")
+                        
+                        <div class="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-1.5 rounded-full">
+                            <i data-lucide="calendar" class="h-4 w-4 text-indigo-500"></i>
+                            <span>@DateTime.Now.ToShortDateString()</span>
+                        </div>
+                        <a href="@Url.Action("Index", "Profile")" class="h-8 w-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shadow-md ring-2 ring-indigo-100 hover:ring-indigo-300 transition-all cursor-pointer" title="Mi Perfil">
+                            A
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Scrollable Content -->
+            <main class="flex-1 overflow-y-auto p-6 lg:p-8">
+                @RenderBody()
+            </main>
+        </div>
+    }
+    else
+    {
+        <!-- PANTALLA DE LOGIN (Sin Sidebar) -->
+        <div class="flex-1 flex flex-col overflow-hidden bg-gray-50 items-center justify-center min-h-screen">
+            @RenderBody()
+        </div>
+    }
+
+    <!-- Inicializar Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

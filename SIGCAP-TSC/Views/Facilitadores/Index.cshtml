@@ -1,0 +1,91 @@
+@model IEnumerable<SIGCAP_TSC.Models.Facilitadores.FacilitadorViewModel>
+@{
+    ViewData["Title"] = "Gestión de Facilitadores";
+}
+
+<div class="space-y-5">
+    <!-- Header -->
+    <div class="flex justify-between items-center flex-wrap gap-3">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Gestión de Facilitadores</h1>
+            <p class="text-gray-500 text-sm">Administra los instructores y capacitadores del sistema.</p>
+        </div>
+        <a href="@Url.Action("Form", "Facilitadores")" class="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm text-sm font-medium">
+            <i data-lucide="user-plus" class="h-4 w-4"></i> Nuevo Facilitador
+        </a>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="text-center py-16 bg-gray-50 rounded-xl border border-dashed border-gray-200 mt-6">
+            <i data-lucide="users" class="mx-auto h-12 w-12 text-gray-300 mb-3"></i>
+            <h3 class="text-sm font-semibold text-gray-700">No hay facilitadores registrados</h3>
+            <p class="text-sm text-gray-400 mt-1">Crea un instructor o capacitador para asignarlo a eventos.</p>
+            <a href="@Url.Action("Form")" class="mt-4 inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700">
+                <i data-lucide="plus" class="h-4 w-4"></i> Nuevo Facilitador
+            </a>
+        </div>
+    }
+    else
+    {
+        <!-- Cards grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mt-6">
+            @foreach (var facilitador in Model)
+            {
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition group flex flex-col relative">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="h-12 w-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xl shadow-inner">
+                            @(!string.IsNullOrEmpty(facilitador.nombres) ? facilitador.nombres.Substring(0, 1).ToUpper() : "F")
+                        </div>
+                        
+                        <div class="flex gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                            <a href="@Url.Action("Form", new { id = facilitador.id_facilitador })" class="p-1.5 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition" title="Editar">
+                                <i data-lucide="edit-3" class="h-4 w-4"></i>
+                            </a>
+                            <form method="post" asp-action="Delete" asp-route-id="@facilitador.id_facilitador" onsubmit="return confirm('¿Estás seguro de eliminar este Facilitador?');">
+                                <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition" title="Eliminar">
+                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <h3 class="text-lg font-bold text-gray-900 mb-1 leading-tight">@facilitador.nombre_completo</h3>
+                    <p class="text-sm text-indigo-600 font-medium mb-4">@facilitador.especialidad</p>
+
+                    <div class="space-y-2.5 text-sm text-gray-600 flex-1">
+                        @if (!string.IsNullOrEmpty(facilitador.email))
+                        {
+                            <div class="flex items-center gap-2.5">
+                                <i data-lucide="mail" class="h-4 w-4 text-gray-400 flex-shrink-0"></i>
+                                <span class="truncate">@facilitador.email</span>
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(facilitador.telefono))
+                        {
+                            <div class="flex items-center gap-2.5">
+                                <i data-lucide="phone" class="h-4 w-4 text-gray-400 flex-shrink-0"></i>
+                                <span class="truncate">@facilitador.telefono</span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="mt-5 pt-4 border-t border-gray-50 flex justify-between items-center">
+                        @if (facilitador.activo == true)
+                        {
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Activo
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
+                                <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Inactivo
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

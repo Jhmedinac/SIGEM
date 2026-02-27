@@ -1,0 +1,140 @@
+@model SIGCAP_TSC.Models.Eventos.EventoFormViewModel
+@{
+    ViewData["Title"] = Model.Evento.id_evento.HasValue ? "Editar Evento" : "Nuevo Evento";
+}
+
+<div class="max-w-3xl mx-auto mt-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100 bg-white">
+            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                @if (Model.Evento.id_evento.HasValue)
+                {
+                    <i data-lucide="edit" class="text-indigo-600 h-5 w-5"></i><span>Editar Evento</span>
+                }
+                else
+                {
+                    <i data-lucide="plus" class="text-indigo-600 h-5 w-5"></i><span>Nuevo Evento</span>
+                }
+            </h2>
+            <a href="@Url.Action("Index")" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </a>
+        </div>
+
+        <form asp-action="Save" method="post" class="p-6 space-y-5">
+            <input type="hidden" asp-for="Evento.id_evento" />
+            
+            @if (ViewBag.Error != null)
+            {
+                <div class="flex items-center gap-2 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg border border-red-200">
+                    <i data-lucide="alert-circle" class="h-4 w-4 flex-shrink-0"></i> @ViewBag.Error
+                </div>
+            }
+
+            <!-- Nombre -->
+            <div>
+                <label asp-for="Evento.nombre_evento" class="block text-sm font-medium text-gray-700 mb-1">Nombre del Evento *</label>
+                <input asp-for="Evento.nombre_evento" required maxlength="200" class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ej: Taller de Liderazgo 2025" />
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Código -->
+                <div>
+                    <label asp-for="Evento.codigo_evento" class="block text-sm font-medium text-gray-700 mb-1">Código *</label>
+                    <input asp-for="Evento.codigo_evento" required maxlength="30" class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="CAP-2025-001" />
+                </div>
+
+                <!-- Cupo -->
+                <div>
+                    <label asp-for="Evento.cupo_maximo" class="block text-sm font-medium text-gray-700 mb-1">Cupo Máximo *</label>
+                    <input asp-for="Evento.cupo_maximo" type="number" min="1" required class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                </div>
+
+                <!-- Tipo -->
+                <div>
+                    <label asp-for="Evento.id_tipo_evento" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Evento *</label>
+                    <select asp-for="Evento.id_tipo_evento" required class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                        <option value="">Seleccionar tipo...</option>
+                        @foreach (var t in Model.TiposList)
+                        {
+                            <option value="@t.Id">@t.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Modalidad -->
+                <div>
+                    <label asp-for="Evento.id_modalidad" class="block text-sm font-medium text-gray-700 mb-1">Modalidad *</label>
+                    <select asp-for="Evento.id_modalidad" required class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                        <option value="">Seleccionar modalidad...</option>
+                        @foreach (var m in Model.ModalidadesList)
+                        {
+                            <option value="@m.Id">@m.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Estado -->
+                <div>
+                    <label asp-for="Evento.id_estado" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                    <select asp-for="Evento.id_estado" class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                        @foreach (var e in Model.EstadosList)
+                        {
+                            <option value="@e.Id">@e.Nombre</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Facilitador -->
+                <div>
+                    <label asp-for="Evento.id_facilitador" class="block text-sm font-medium text-gray-700 mb-1">
+                        <span class="flex items-center gap-1"><i data-lucide="user" class="h-3 w-3 text-indigo-500"></i> Facilitador / Capacitador</span>
+                    </label>
+                    <select asp-for="Evento.id_facilitador" class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                        <option value="">Sin asignar</option>
+                        @foreach (var f in Model.FacilitadoresList)
+                        {
+                            <option value="@f.id_facilitador">@f.DisplayName</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Salón -->
+                <div>
+                    <label asp-for="Evento.id_salon" class="block text-sm font-medium text-gray-700 mb-1">
+                        <span class="flex items-center gap-1"><i data-lucide="building" class="h-3 w-3 text-indigo-500"></i> Salón</span>
+                    </label>
+                    <select asp-for="Evento.id_salon" class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                        <option value="">Sin asignar</option>
+                        @foreach (var s in Model.SalonesList)
+                        {
+                            <option value="@s.id_salon">@s.DisplayName</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Fecha Inicio -->
+                <div>
+                    <label asp-for="Evento.fecha_inicio" class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio *</label>
+                    <input asp-for="Evento.fecha_inicio" type="date" required value="@(Model.Evento.fecha_inicio?.ToString("yyyy-MM-dd"))" class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                </div>
+
+                <!-- Fecha Fin -->
+                <div>
+                    <label asp-for="Evento.fecha_fin" class="block text-sm font-medium text-gray-700 mb-1">Fecha Fin *</label>
+                    <input asp-for="Evento.fecha_fin" type="date" required value="@(Model.Evento.fecha_fin?.ToString("yyyy-MM-dd"))" class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                <a href="@Url.Action("Index")" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    Cancelar
+                </a>
+                <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
+                    <i data-lucide="save" class="h-4 w-4"></i> @(Model.Evento.id_evento.HasValue ? "Actualizar" : "Guardar")
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

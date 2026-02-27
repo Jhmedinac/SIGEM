@@ -1,0 +1,79 @@
+@model List<SIGCAP_TSC.Models.Participantes.ParticipanteViewModel>
+@{
+    ViewData["Title"] = "Gestión de Participantes";
+}
+
+<div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div>
+        <p class="text-sm text-gray-500 mt-1">Administra el padrón de participantes</p>
+    </div>
+    <a href="@Url.Action("Form", "Participantes")" class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-sm shadow-indigo-200">
+        <i data-lucide="plus" class="h-4 w-4"></i>
+        Nuevo Participante
+    </a>
+</div>
+
+<div class="bg-white rounded-2xl shadow-sm ring-1 ring-gray-900/5 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="bg-gray-50 border-b border-gray-100">
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Identificación</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Nombres</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Apellidos</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Email</th>
+                    <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr class="hover:bg-gray-50 transition-colors group">
+                            <td class="px-6 py-4">
+                                <span class="inline-flex px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    @item.identificacion
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <p class="text-sm font-semibold text-gray-900">@item.nombres</p>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600">
+                                @item.apellidos
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600">
+                                @item.email
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <a href="@Url.Action("Form", "Participantes", new { id = item.id_persona })" class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Editar">
+                                        <i data-lucide="edit-2" class="h-4 w-4"></i>
+                                    </a>
+                                    <form method="post" action="@Url.Action("Delete", "Participantes", new { id = item.id_persona })" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar este participante?');">
+                                        <button type="submit" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+                                            <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                            <div class="flex flex-col items-center justify-center">
+                                <div class="bg-gray-50 p-3 rounded-full mb-3">
+                                    <i data-lucide="users" class="h-6 w-6 text-gray-400"></i>
+                                </div>
+                                <p class="text-sm font-medium">No hay participantes registrados</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

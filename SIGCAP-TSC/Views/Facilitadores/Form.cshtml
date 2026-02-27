@@ -1,0 +1,98 @@
+@model SIGCAP_TSC.Models.Facilitadores.FacilitadorViewModel
+@{
+    ViewData["Title"] = Model.id_facilitador.HasValue ? "Editar Facilitador" : "Nuevo Facilitador";
+}
+
+<div class="max-w-3xl mx-auto mt-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100 bg-white">
+            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                @if (Model.id_facilitador.HasValue)
+                {
+                    <i data-lucide="edit" class="text-indigo-600 h-5 w-5"></i><span>Editar Facilitador</span>
+                }
+                else
+                {
+                    <i data-lucide="plus" class="text-indigo-600 h-5 w-5"></i><span>Registrar Facilitador</span>
+                }
+            </h2>
+            <a href="@Url.Action("Index")" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </a>
+        </div>
+
+        <form asp-action="Save" method="post" class="p-6 space-y-5">
+            <input type="hidden" asp-for="id_facilitador" />
+            
+            @if (ViewBag.Error != null)
+            {
+                <div class="flex items-center gap-2 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg border border-red-200">
+                    <i data-lucide="alert-circle" class="h-4 w-4 flex-shrink-0"></i> @ViewBag.Error
+                </div>
+            }
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <!-- Nombres -->
+                <div>
+                    <label asp-for="nombres" class="block text-sm font-medium text-gray-700 mb-1">Nombres *</label>
+                    <input asp-for="nombres" required maxlength="100" class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ej: Juan Carlos" />
+                    <span asp-validation-for="nombres" class="text-xs text-red-500 mt-1"></span>
+                </div>
+
+                <!-- Apellidos -->
+                <div>
+                    <label asp-for="apellidos" class="block text-sm font-medium text-gray-700 mb-1">Apellidos *</label>
+                    <input asp-for="apellidos" required maxlength="100" class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ej: Pérez Gómez" />
+                    <span asp-validation-for="apellidos" class="text-xs text-red-500 mt-1"></span>
+                </div>
+
+                <!-- Especialidad -->
+                <div class="md:col-span-2">
+                    <label asp-for="especialidad" class="block text-sm font-medium text-gray-700 mb-1">Especialidad Principal *</label>
+                    <input asp-for="especialidad" required maxlength="200" class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ej: Desarrollo Web, Liderazgo, Agile..." />
+                    <span asp-validation-for="especialidad" class="text-xs text-red-500 mt-1"></span>
+                </div>
+
+                <!-- Correo Electrónico -->
+                <div>
+                    <label asp-for="email" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="mail" class="h-4 w-4 text-gray-400"></i>
+                        </div>
+                        <input asp-for="email" type="email" class="block w-full pl-10 rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="juan@ejemplo.com" />
+                    </div>
+                </div>
+
+                <!-- Teléfono -->
+                <div>
+                    <label asp-for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="phone" class="h-4 w-4 text-gray-400"></i>
+                        </div>
+                        <input asp-for="telefono" class="block w-full pl-10 rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="+123 456 7890" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estado Activo -->
+            <div class="pt-4 mt-2 border-t border-gray-100">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input asp-for="activo" type="checkbox" class="w-5 h-5 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2 cursor-pointer" />
+                    <span class="text-sm font-medium text-gray-700">El facilitador está activo y disponible</span>
+                </label>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-3 pt-6">
+                <a href="@Url.Action("Index")" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    Cancelar
+                </a>
+                <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
+                    <i data-lucide="save" class="h-4 w-4"></i> @(Model.id_facilitador.HasValue ? "Actualizar Cambios" : "Guardar Registro")
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

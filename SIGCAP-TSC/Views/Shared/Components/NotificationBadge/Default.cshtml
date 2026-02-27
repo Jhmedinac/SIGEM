@@ -1,0 +1,10 @@
+@model int
+
+<a href="@Url.Action("Index", "Alertas")" class="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors" title="Centro de Alertas">
+    <i data-lucide="bell" class="h-5 w-5"></i>
+    
+    @if (Model > 0)
+    {
+        <span class="absolute top-1.5 right-1.5 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+    }
+</a>

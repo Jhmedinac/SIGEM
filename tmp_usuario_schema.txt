@@ -1,0 +1,15 @@
+﻿
+    id_usuario INT IDENTITY(1,1) PRIMARY KEY,
+    id_persona INT NOT NULL,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    
+    -- MEJORA 4: VARBINARY para Hash
+    password_hash VARBINARY(64) NOT NULL, 
+    
+    is_locked BIT DEFAULT 0,
+    created_at DATETIME2(3) DEFAULT SYSDATETIME(),
+    created_by INT NOT NULL,
+    is_deleted BIT DEFAULT 0,
+
+    CONSTRAINT FK_usuario_persona FOREIGN KEY (id_persona) REFERENCES core.persona(id_persona)
+

@@ -1,0 +1,88 @@
+@model IEnumerable<SIGCAP_TSC.Models.Salones.SalonViewModel>
+@{
+    ViewData["Title"] = "Gestión de Salones";
+}
+
+<div class="space-y-5">
+    <!-- Header -->
+    <div class="flex justify-between items-center flex-wrap gap-3">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Salones y Espacios</h1>
+            <p class="text-gray-500 text-sm">Administra los lugares físicos y virtuales para los eventos.</p>
+        </div>
+        <a href="@Url.Action("Form", "Salones")" class="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm text-sm font-medium">
+            <i data-lucide="plus" class="h-4 w-4"></i> Nuevo Salón
+        </a>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="text-center py-16 bg-gray-50 rounded-xl border border-dashed border-gray-200 mt-6">
+            <i data-lucide="building" class="mx-auto h-12 w-12 text-gray-300 mb-3"></i>
+            <h3 class="text-sm font-semibold text-gray-700">No hay salones habilitados</h3>
+            <p class="text-sm text-gray-400 mt-1">Registra ubicaciones donde se impartirán las capacitaciones.</p>
+            <a href="@Url.Action("Form")" class="mt-4 inline-flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-indigo-700">
+                <i data-lucide="plus" class="h-4 w-4"></i> Nuevo Salón
+            </a>
+        </div>
+    }
+    else
+    {
+        <!-- Cards grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mt-6">
+            @foreach (var salon in Model)
+            {
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition group flex flex-col relative">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="p-3 rounded-xl bg-indigo-50 text-indigo-600">
+                            <i data-lucide="store" class="h-6 w-6"></i>
+                        </div>
+                        
+                        <div class="flex gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                            <a href="@Url.Action("Form", new { id = salon.id_salon })" class="p-1.5 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition" title="Editar">
+                                <i data-lucide="edit-3" class="h-4 w-4"></i>
+                            </a>
+                            <form method="post" asp-action="Delete" asp-route-id="@salon.id_salon" onsubmit="return confirm('¿Estás seguro de eliminar este salón? Todos los eventos asociados podrían verse afectados.');">
+                                <button type="submit" class="p-1.5 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition" title="Eliminar">
+                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <h3 class="text-lg font-bold text-gray-900 mb-2 leading-tight">@salon.nombre_salon</h3>
+
+                    <div class="space-y-2.5 text-sm text-gray-600 flex-1">
+                        @if (salon.capacidad.HasValue)
+                        {
+                            <div class="flex items-center gap-2.5">
+                                <i data-lucide="users" class="h-4 w-4 text-gray-400 flex-shrink-0"></i>
+                                <span>Capacidad: <strong>@salon.capacidad</strong> personas</span>
+                            </div>
+                        }
+                        
+                        <div class="flex items-start gap-2.5">
+                            <i data-lucide="map-pin" class="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5"></i>
+                            <span class="line-clamp-2">@(string.IsNullOrEmpty(salon.ubicacion) ? "Sin ubicación especificada" : salon.ubicacion)</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 pt-4 border-t border-gray-50 flex justify-between items-center">
+                        @if (salon.activo == true)
+                        {
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Disponible
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
+                                <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Fuera de Servicio
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

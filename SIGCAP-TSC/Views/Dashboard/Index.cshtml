@@ -1,0 +1,191 @@
+﻿@model SIGCAP_TSC.Models.Dashboard.DashboardStatsViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="mb-8">
+    <h1 class="text-2xl font-bold text-gray-900">Bienvenido de nuevo, @User.Identity.Name</h1>
+    <p class="text-gray-500">Aquí tienes el resumen de hoy.</p>
+</div>
+
+<!-- KPIs -->
+<div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+    <div class="overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-900/5 transition hover:shadow-md hover:-translate-y-1">
+        <div class="flex items-center gap-4">
+            <div class="rounded-xl bg-indigo-50 p-3">
+                <i data-lucide="calendar" class="h-6 w-6 text-indigo-600"></i>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-500">Eventos Activos</p>
+                <p class="text-3xl font-bold text-gray-900">@Model.ActiveEventsCount</p>
+            </div>
+        </div>
+    </div>
+    <div class="overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-900/5 transition hover:shadow-md hover:-translate-y-1">
+        <div class="flex items-center gap-4">
+            <div class="rounded-xl bg-green-50 p-3">
+                <i data-lucide="user-plus" class="h-6 w-6 text-green-600"></i>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-500">En Capacitación</p>
+                <p class="text-3xl font-bold text-gray-900">@Model.UsersInTrainingCount</p>
+            </div>
+        </div>
+    </div>
+    <div class="overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-900/5 transition hover:shadow-md hover:-translate-y-1">
+        <div class="flex items-center gap-4">
+            <div class="rounded-xl bg-blue-50 p-3">
+                <i data-lucide="users" class="h-6 w-6 text-blue-600"></i>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-500">Total Usuarios</p>
+                <p class="text-3xl font-bold text-gray-900">@Model.TotalUsers</p>
+            </div>
+        </div>
+    </div>
+    <div class="overflow-hidden rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-900/5 transition hover:shadow-md hover:-translate-y-1">
+        <div class="flex items-center gap-4">
+            <div class="rounded-xl bg-yellow-50 p-3">
+                <i data-lucide="door-open" class="h-6 w-6 text-yellow-600"></i>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-500">Salones Activos</p>
+                <p class="text-3xl font-bold text-gray-900">@Model.ActiveSalones</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráficos y Tablas -->
+<div class="grid gap-6 lg:grid-cols-2">
+    <!-- Gráfico de Estados -->
+    <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-900/5">
+        <h3 class="mb-6 text-lg font-bold text-gray-900">Estados</h3>
+        <div class="h-72 w-full relative">
+            <canvas id="eventsStatusChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Próximos Eventos -->
+    <div class="rounded-2xl bg-white shadow-sm ring-1 ring-gray-900/5 flex flex-col">
+        <div class="border-b border-gray-50 px-6 py-5 flex justify-between items-center">
+            <h3 class="text-lg font-bold text-gray-900">Próximos Eventos</h3>
+            <a href="@Url.Action("Index", "Eventos")" class="text-xs font-semibold text-indigo-600 hover:text-indigo-500">Ver calendario</a>
+        </div>
+        <div class="flex-1 overflow-auto p-4">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr>
+                        <th class="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3 border-b border-gray-100">Evento</th>
+                        <th class="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3 border-b border-gray-100">Fecha</th>
+                        <th class="text-xs font-medium text-gray-500 uppercase tracking-wider pb-3 border-b border-gray-100 text-right">Cupo</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    @if (Model.UpcomingEvents != null && Model.UpcomingEvents.Count > 0)
+                    {
+                        foreach (var evt in Model.UpcomingEvents)
+                        {
+                            var fillPercentage = evt.cupo_maximo > 0 ? (float)evt.cupo_actual / evt.cupo_maximo : 0;
+                            var badgeClass = fillPercentage > 0.9 ? "bg-red-500" : (fillPercentage > 0.7 ? "bg-amber-500" : "bg-green-500");
+
+                            <tr class="group hover:bg-gray-50 transition-colors">
+                                <td class="py-3 pr-4 border-b border-gray-50 group-last:border-0">
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-2 rounded-lg bg-indigo-50 text-indigo-600">
+                                            <i data-lucide="calendar" class="h-4 w-4"></i>
+                                        </div>
+                                        <div>
+                                            <p class="font-semibold text-gray-900 truncate max-w-[140px]">@evt.nombre_evento</p>
+                                            <p class="text-[10px] text-gray-500 uppercase">@evt.estado</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="py-3 pr-4 border-b border-gray-50 group-last:border-0 text-gray-600 font-medium">
+                                    @evt.fecha_inicio.ToString("dd MMM")
+                                </td>
+                                <td class="py-3 border-b border-gray-50 group-last:border-0 text-right">
+                                    <div class="flex flex-col items-end gap-1">
+                                        <span class="text-xs font-bold text-gray-700">@evt.cupo_actual/@evt.cupo_maximo</span>
+                                        <div class="w-16 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                                            <div class="h-full rounded-full @badgeClass" style="width: @(fillPercentage * 100)%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="3" class="py-8 text-center text-gray-400 text-sm">No hay eventos próximos</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const ctx = document.getElementById('eventsStatusChart');
+            if (ctx) {
+                const dataFromModel = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.EventsByStatus ?? new List<SIGCAP_TSC.Models.Dashboard.EventStatusViewModel>()));
+                
+                const labels = dataFromModel.map(e => e.status);
+                const dataCounts = dataFromModel.map(e => e.count);
+                const backgroundColors = ['#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6'];
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: dataCounts,
+                            backgroundColor: backgroundColors,
+                            borderRadius: 6,
+                            borderSkipped: false,
+                            barThickness: 30
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: '#F9FAFB',
+                                titleColor: '#111827',
+                                bodyColor: '#6B7280',
+                                borderColor: '#E5E7EB',
+                                borderWidth: 1,
+                                padding: 10,
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.parsed.y;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false },
+                                ticks: { color: '#9CA3AF', font: { size: 12 } },
+                                border: { display: false }
+                            },
+                            y: {
+                                grid: { color: '#F3F4F6', drawBorder: false },
+                                ticks: { color: '#9CA3AF', font: { size: 12 } },
+                                border: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+}
