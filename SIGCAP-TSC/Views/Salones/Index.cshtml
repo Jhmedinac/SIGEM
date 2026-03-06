@@ -50,36 +50,22 @@
                         </div>
                     </div>
 
-                    <h3 class="text-lg font-bold text-gray-900 mb-2 leading-tight">@salon.nombre_salon</h3>
+                    <h3 class="text-lg font-bold text-gray-900 mb-2 leading-tight">@salon.nombre</h3>
 
                     <div class="space-y-2.5 text-sm text-gray-600 flex-1">
-                        @if (salon.capacidad.HasValue)
+                        @if (salon.capacidad_maxima.HasValue)
                         {
                             <div class="flex items-center gap-2.5">
                                 <i data-lucide="users" class="h-4 w-4 text-gray-400 flex-shrink-0"></i>
-                                <span>Capacidad: <strong>@salon.capacidad</strong> personas</span>
+                                <span>Capacidad: <strong>@salon.capacidad_maxima</strong> personas</span>
                             </div>
                         }
-                        
-                        <div class="flex items-start gap-2.5">
-                            <i data-lucide="map-pin" class="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5"></i>
-                            <span class="line-clamp-2">@(string.IsNullOrEmpty(salon.ubicacion) ? "Sin ubicación especificada" : salon.ubicacion)</span>
-                        </div>
                     </div>
 
                     <div class="mt-5 pt-4 border-t border-gray-50 flex justify-between items-center">
-                        @if (salon.activo == true)
-                        {
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">
-                                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Disponible
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600">
-                                <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Fuera de Servicio
-                            </span>
-                        }
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> Disponible
+                        </span>
                     </div>
                 </div>
             }

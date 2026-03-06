@@ -47,10 +47,21 @@
                 </div>
 
                 <!-- Especialidad -->
-                <div class="md:col-span-2">
+                <div>
                     <label asp-for="especialidad" class="block text-sm font-medium text-gray-700 mb-1">Especialidad Principal *</label>
-                    <input asp-for="especialidad" required maxlength="200" class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ej: Desarrollo Web, Liderazgo, Agile..." />
+                    <input asp-for="especialidad" required maxlength="200" class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ej: Desarrollo Web..." />
                     <span asp-validation-for="especialidad" class="text-xs text-red-500 mt-1"></span>
+                </div>
+
+                <!-- Tipo -->
+                <div>
+                    <label asp-for="tipo" class="block text-sm font-medium text-gray-700 mb-1">Tipo de Facilitador *</label>
+                    <select asp-for="tipo" required class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Seleccione...</option>
+                        <option value="INTERNO">Interno</option>
+                        <option value="EXTERNO">Externo</option>
+                    </select>
+                    <span asp-validation-for="tipo" class="text-xs text-red-500 mt-1"></span>
                 </div>
 
                 <!-- Correo Electrónico -->

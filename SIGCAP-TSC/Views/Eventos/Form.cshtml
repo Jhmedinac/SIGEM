@@ -116,13 +116,13 @@
                 <!-- Fecha Inicio -->
                 <div>
                     <label asp-for="Evento.fecha_inicio" class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio *</label>
-                    <input asp-for="Evento.fecha_inicio" type="date" required value="@(Model.Evento.fecha_inicio?.ToString("yyyy-MM-dd"))" class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                    <input asp-for="Evento.fecha_inicio" type="date" required class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
                 </div>
 
                 <!-- Fecha Fin -->
                 <div>
                     <label asp-for="Evento.fecha_fin" class="block text-sm font-medium text-gray-700 mb-1">Fecha Fin *</label>
-                    <input asp-for="Evento.fecha_fin" type="date" required value="@(Model.Evento.fecha_fin?.ToString("yyyy-MM-dd"))" class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                    <input asp-for="Evento.fecha_fin" type="date" required class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
                 </div>
             </div>
 

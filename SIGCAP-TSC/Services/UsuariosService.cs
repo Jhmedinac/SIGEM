@@ -51,6 +51,17 @@ namespace SIGCAP_TSC.Services
             return JsonConvert.DeserializeObject<List<PersonaDisponibleViewModel>>(apiResponse.data.ToString()) ?? new List<PersonaDisponibleViewModel>();
         }
 
+        public async Task<List<RolViewModel>> GetRolesAsync(string token)
+        {
+            ConfigurarAuth(token);
+            var response = await _httpClient.GetAsync("usuarios/roles");
+            if (!response.IsSuccessStatusCode) return new List<RolViewModel>();
+
+            var json = await response.Content.ReadAsStringAsync();
+            dynamic apiResponse = JsonConvert.DeserializeObject(json);
+            return JsonConvert.DeserializeObject<List<RolViewModel>>(apiResponse.data.ToString()) ?? new List<RolViewModel>();
+        }
+
         public async Task<bool> CreateAsync(UsuarioViewModel usuario, string token)
         {
             ConfigurarAuth(token);
@@ -62,7 +73,7 @@ namespace SIGCAP_TSC.Services
         public async Task<bool> UpdateAsync(int id, UsuarioViewModel usuario, string token)
         {
             ConfigurarAuth(token);
-            var content = new StringContent(JsonConvert.SerializeObject(new { username = usuario.username, is_locked = usuario.is_locked }), Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonConvert.SerializeObject(new { username = usuario.username, is_locked = usuario.is_locked, id_rol = usuario.id_rol }), Encoding.UTF8, "application/json");
             var response = await _httpClient.PutAsync($"usuarios/{id}", content);
             return response.IsSuccessStatusCode;
         }

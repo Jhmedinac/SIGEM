@@ -25,8 +25,25 @@ namespace SIGCAP_TSC.Services
             if (!response.IsSuccessStatusCode) return new List<EventoViewModel>();
 
             var json = await response.Content.ReadAsStringAsync();
-            dynamic apiResponse = JsonConvert.DeserializeObject(json);
-            return JsonConvert.DeserializeObject<List<EventoViewModel>>(apiResponse.data.ToString()) ?? new List<EventoViewModel>();
+            try
+            {
+                dynamic? apiResponse = JsonConvert.DeserializeObject(json);
+                if (apiResponse?.data == null) 
+                {
+                    Console.WriteLine("API RESPONSE DATA IS NULL!");
+                    Console.WriteLine("JSON: " + json);
+                    return new List<EventoViewModel>();
+                }
+                var list = JsonConvert.DeserializeObject<List<EventoViewModel>>(apiResponse.data.ToString());
+                Console.WriteLine($"SUCCESSFULLY DESERIALIZED {list?.Count ?? 0} EVENTOS");
+                return list ?? new List<EventoViewModel>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("ERROR DESERIALIZING EVENTOS: " + ex.Message);
+                Console.WriteLine("JSON Original: " + json);
+                return new List<EventoViewModel>();
+            }
         }
 
         public async Task<EventoViewModel> GetByIdAsync(int id, string token)
@@ -40,20 +57,37 @@ namespace SIGCAP_TSC.Services
             return JsonConvert.DeserializeObject<EventoViewModel>(apiResponse.data.ToString());
         }
 
-        public async Task<bool> CreateAsync(EventoViewModel evento, string token)
+        public async Task<(bool Success, string? ErrorMessage)> CreateAsync(EventoViewModel evento, string token)
         {
             ConfigurarAuth(token);
-            var content = new StringContent(JsonConvert.SerializeObject(evento), Encoding.UTF8, "application/json");
+            var jsonBody = JsonConvert.SerializeObject(evento);
+            Console.WriteLine($"[CreateAsync] Token (primeros 30 chars): {(token?.Length > 30 ? token.Substring(0, 30) : token)}");
+            Console.WriteLine($"[CreateAsync] JSON enviado al API: {jsonBody}");
+            
+            var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync("eventos", content);
-            return response.IsSuccessStatusCode;
+            
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"[CreateAsync] HTTP Status: {(int)response.StatusCode} {response.StatusCode}");
+            Console.WriteLine($"[CreateAsync] Response body: {responseBody}");
+            
+            if (response.IsSuccessStatusCode) return (true, null);
+            
+            dynamic? errorRes = JsonConvert.DeserializeObject(responseBody);
+            return (false, errorRes?.message?.ToString() ?? "Error interno del servidor");
         }
 
-        public async Task<bool> UpdateAsync(int id, EventoViewModel evento, string token)
+        public async Task<(bool Success, string? ErrorMessage)> UpdateAsync(int id, EventoViewModel evento, string token)
         {
             ConfigurarAuth(token);
             var content = new StringContent(JsonConvert.SerializeObject(evento), Encoding.UTF8, "application/json");
             var response = await _httpClient.PutAsync($"eventos/{id}", content);
-            return response.IsSuccessStatusCode;
+            
+            if (response.IsSuccessStatusCode) return (true, null);
+            
+            var errorJson = await response.Content.ReadAsStringAsync();
+            dynamic? errorRes = JsonConvert.DeserializeObject(errorJson);
+            return (false, errorRes?.message?.ToString() ?? "Error interno del servidor");
         }
 
         public async Task<bool> DeleteAsync(int id, string token)

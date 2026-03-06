@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body class="flex h-screen bg-gray-50 font-sans overflow-hidden">
-    @if (User.Identity.IsAuthenticated)
+    @if (User.Identity?.IsAuthenticated == true)
     {
         var controller = ViewContext.RouteData.Values["controller"]?.ToString();
         var action = ViewContext.RouteData.Values["action"]?.ToString();
@@ -45,6 +45,15 @@
                     @if (controller == "Eventos") { <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-600 rounded-r-md"></div> }
                 </a>
 
+                <!-- Inscripciones -->
+                <a href="@Url.Action("Index", "Inscripciones")" class="flex flex-col items-center justify-center w-full py-3 rounded-xl transition-all duration-200 group relative @(controller == "Inscripciones" ? "bg-indigo-50 text-indigo-600" : "text-gray-400 hover:bg-gray-50 hover:text-indigo-500")">
+                    <div class="relative p-2 rounded-lg mb-1 @(controller == "Inscripciones" ? "bg-indigo-100" : "bg-transparent group-hover:bg-indigo-50")">
+                        <i data-lucide="book-open" class="h-6 w-6 @(controller == "Inscripciones" ? "text-indigo-600" : "text-gray-500 group-hover:text-indigo-600")"></i>
+                    </div>
+                    <span class="text-[10px] font-medium">Inscripciones</span>
+                    @if (controller == "Inscripciones") { <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-600 rounded-r-md"></div> }
+                </a>
+
                 <!-- Alertas -->
                 <a href="@Url.Action("Index", "Alertas")" class="flex flex-col items-center justify-center w-full py-3 rounded-xl transition-all duration-200 group relative @(controller == "Alertas" ? "bg-indigo-50 text-indigo-600" : "text-gray-400 hover:bg-gray-50 hover:text-indigo-500")">
                     <div class="relative p-2 rounded-lg mb-1 @(controller == "Alertas" ? "bg-indigo-100" : "bg-transparent group-hover:bg-indigo-50")">
@@ -70,6 +79,15 @@
                     </div>
                     <span class="text-[10px] font-medium">Participantes</span>
                     @if (controller == "Participantes") { <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-600 rounded-r-md"></div> }
+                </a>
+
+                <!-- Personal -->
+                <a href="@Url.Action("Index", "Personal")" class="flex flex-col items-center justify-center w-full py-3 rounded-xl transition-all duration-200 group relative @(controller == "Personal" ? "bg-indigo-50 text-indigo-600" : "text-gray-400 hover:bg-gray-50 hover:text-indigo-500")">
+                    <div class="relative p-2 rounded-lg mb-1 @(controller == "Personal" ? "bg-indigo-100" : "bg-transparent group-hover:bg-indigo-50")">
+                        <i data-lucide="user-check" class="h-6 w-6 @(controller == "Personal" ? "text-indigo-600" : "text-gray-500 group-hover:text-indigo-600")"></i>
+                    </div>
+                    <span class="text-[10px] font-medium">Personal</span>
+                    @if (controller == "Personal") { <div class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-indigo-600 rounded-r-md"></div> }
                 </a>
 
                 <!-- Usuarios -->

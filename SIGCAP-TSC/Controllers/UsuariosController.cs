@@ -40,6 +40,7 @@ namespace SIGCAP_TSC.Controllers
             }
 
             ViewBag.PersonasDisponibles = await _usuariosService.GetPersonasDisponiblesAsync(token);
+            ViewBag.RolesDisponibles = await _usuariosService.GetRolesAsync(token);
             return View(viewModel);
         }
 
@@ -53,6 +54,7 @@ namespace SIGCAP_TSC.Controllers
             {
                 ViewBag.Error = "Verifica los datos del formulario.";
                 ViewBag.PersonasDisponibles = await _usuariosService.GetPersonasDisponiblesAsync(token);
+                ViewBag.RolesDisponibles = await _usuariosService.GetRolesAsync(token);
                 return View("Form", model);
             }
 
@@ -74,6 +76,7 @@ namespace SIGCAP_TSC.Controllers
             
             ViewBag.Error = "Ocurrió un error al intentar guardar el usuario. Puede que el username ya exista.";
             ViewBag.PersonasDisponibles = await _usuariosService.GetPersonasDisponiblesAsync(token);
+            ViewBag.RolesDisponibles = await _usuariosService.GetRolesAsync(token);
             return View("Form", model);
         }
 

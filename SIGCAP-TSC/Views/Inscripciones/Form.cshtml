@@ -1,0 +1,71 @@
+@model SIGCAP_TSC.Models.Inscripciones.InscripcionFormViewModel
+@{
+    ViewData["Title"] = Model.Inscripcion.id_inscripcion.HasValue ? "Editar Inscripción" : "Nueva Inscripción";
+}
+
+<div class="max-w-2xl mx-auto mt-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100 bg-white">
+            <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                @if (Model.Inscripcion.id_inscripcion.HasValue)
+                {
+                    <i data-lucide="edit" class="text-indigo-600 h-5 w-5"></i><span>Editar Inscripción</span>
+                }
+                else
+                {
+                    <i data-lucide="plus" class="text-indigo-600 h-5 w-5"></i><span>Nueva Inscripción</span>
+                }
+            </h2>
+            <a href="@Url.Action("Index")" class="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </a>
+        </div>
+
+        <form asp-action="Save" method="post" class="p-6 space-y-5">
+            <input type="hidden" asp-for="Inscripcion.id_inscripcion" />
+            
+            @if (ViewBag.Error != null)
+            {
+                <div class="flex items-center gap-2 bg-red-50 text-red-700 text-sm px-4 py-3 rounded-lg border border-red-200">
+                    <i data-lucide="alert-circle" class="h-4 w-4 flex-shrink-0"></i> @ViewBag.Error
+                </div>
+            }
+
+            <div class="space-y-4">
+                <!-- Evento -->
+                <div>
+                    <label asp-for="Inscripcion.id_evento" class="block text-sm font-medium text-gray-700 mb-1">Evento / Curso *</label>
+                    <select asp-for="Inscripcion.id_evento" required class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                        <option value="">Seleccione un evento...</option>
+                        @foreach (var e in Model.EventosList)
+                        {
+                            <option value="@e.id_evento">@e.codigo_evento - @e.nombre_evento</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Participante -->
+                <div>
+                    <label asp-for="Inscripcion.id_persona" class="block text-sm font-medium text-gray-700 mb-1">Participante *</label>
+                    <select asp-for="Inscripcion.id_persona" required class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                        <option value="">Seleccione un participante...</option>
+                        @foreach (var p in Model.ParticipantesList)
+                        {
+                            <option value="@p.id_persona">@p.nombres @p.apellidos (@p.identificacion)</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                <a href="@Url.Action("Index")" class="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                    Cancelar
+                </a>
+                <button type="submit" class="px-5 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
+                    <i data-lucide="save" class="h-4 w-4"></i> @(Model.Inscripcion.id_inscripcion.HasValue ? "Actualizar" : "Guardar")
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

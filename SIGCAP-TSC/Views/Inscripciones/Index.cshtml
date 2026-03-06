@@ -1,0 +1,87 @@
+@model IEnumerable<SIGCAP_TSC.Models.Inscripciones.InscripcionViewModel>
+@{
+    ViewData["Title"] = "Inscripciones a Cursos";
+}
+
+<div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+    <!-- Page header -->
+    <div class="sm:flex sm:justify-between sm:items-center mb-8">
+        <!-- Left: Title -->
+        <div class="mb-4 sm:mb-0">
+            <h1 class="text-2xl md:text-3xl text-gray-800 font-bold flex items-center gap-2">
+                <i data-lucide="book-open" class="text-indigo-600 h-8 w-8"></i> Inscripciones
+            </h1>
+        </div>
+        <!-- Right: Actions -->
+        <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+            <a href="@Url.Action("Form")" class="btn bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg px-4 py-2 flex items-center gap-2 transition-colors shadow-sm font-medium text-sm">
+                <i data-lucide="plus" class="h-4 w-4"></i>
+                <span class="hidden xs:block">Nueva Inscripción</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white shadow-lg rounded-xl border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 font-semibold">Evento / Curso</th>
+                        <th class="px-6 py-4 font-semibold">Participante</th>
+                        <th class="px-6 py-4 font-semibold">Estado</th>
+                        <th class="px-6 py-4 text-center font-semibold">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <div class="font-medium text-gray-900">@item.nombre_evento</div>
+                                    <div class="text-xs text-gray-500">@item.codigo_evento</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="font-medium text-gray-900">@item.participante_nombre</div>
+                                    <div class="text-xs text-gray-500">Doc: @item.participante_documento</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        @item.estado_inscripcion
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="flex justify-center items-center gap-2">
+                                        <a href="@Url.Action("Form", new { id = item.id_inscripcion })" class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 p-2 rounded-lg transition-colors" title="Editar">
+                                            <i data-lucide="edit-2" class="h-4 w-4"></i>
+                                        </a>
+                                        <form asp-action="Delete" asp-route-id="@item.id_inscripcion" method="post" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar esta inscripción?');">
+                                            <button type="submit" class="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition-colors" title="Eliminar">
+                                                <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="bg-gray-50 p-3 rounded-full mb-3">
+                                        <i data-lucide="inbox" class="h-6 w-6 text-gray-400"></i>
+                                    </div>
+                                    <p class="text-sm">No hay inscripciones registradas en el sistema.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

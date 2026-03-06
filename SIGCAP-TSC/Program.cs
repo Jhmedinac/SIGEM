@@ -40,6 +40,16 @@ builder.Services.AddHttpClient<SIGCAP_TSC.Services.FacilitadoresService>(client 
 {
     client.BaseAddress = new Uri(baseUrl);
 });
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.InscripcionesService>(client => 
+{
+    client.BaseAddress = new Uri(baseUrl);
+});
+
+// Registro de PersonalService
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.PersonalService>(client =>
+{
+    client.BaseAddress = new Uri(baseUrl);
+});
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -49,7 +59,12 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromHours(8); // Match con JWT del backend
     });
 
-builder.Services.AddSession(); // Para guardar el token temporalmente
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(8); // Igual que el JWT del backend
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+}); // Para guardar el token temporalmente
 
 var app = builder.Build();
 

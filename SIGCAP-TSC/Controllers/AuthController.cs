@@ -15,8 +15,20 @@ namespace SIGCAP_TSC.Controllers
             _authService = authService;
         }
         [HttpGet]
-        public IActionResult Login()
+        public async Task<IActionResult> Login()
         {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                if (!string.IsNullOrEmpty(HttpContext.Session.GetString("AccessToken")))
+                {
+                    return RedirectToAction("Index", "Dashboard");
+                }
+                else
+                {
+                    await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                    return RedirectToAction("Login", "Auth");
+                }
+            }
             return View();
         }
         [HttpPost]
@@ -49,6 +61,13 @@ namespace SIGCAP_TSC.Controllers
         [HttpGet]
         public IActionResult ForgotPassword()
         {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                if (!string.IsNullOrEmpty(HttpContext.Session.GetString("AccessToken")))
+                    return RedirectToAction("Index", "Dashboard");
+                else
+                    return RedirectToAction("Login", "Auth");
+            }
             return View();
         }
 
@@ -79,6 +98,13 @@ namespace SIGCAP_TSC.Controllers
         [HttpGet]
         public IActionResult ResetPassword(string token)
         {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                if (!string.IsNullOrEmpty(HttpContext.Session.GetString("AccessToken")))
+                    return RedirectToAction("Index", "Dashboard");
+                else
+                    return RedirectToAction("Login", "Auth");
+            }
             if (string.IsNullOrEmpty(token))
             {
                 return RedirectToAction("Login", "Auth");

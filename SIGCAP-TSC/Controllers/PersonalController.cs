@@ -1,18 +1,18 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SIGCAP_TSC.Models.Salones;
+using SIGCAP_TSC.Models.Personal;
 using SIGCAP_TSC.Services;
 
 namespace SIGCAP_TSC.Controllers
 {
     [Authorize]
-    public class SalonesController : Controller
+    public class PersonalController : Controller
     {
-        private readonly SalonesService _salonesService;
+        private readonly PersonalService _personalService;
 
-        public SalonesController(SalonesService salonesService)
+        public PersonalController(PersonalService personalService)
         {
-            _salonesService = salonesService;
+            _personalService = personalService;
         }
 
         private string GetToken() => HttpContext.Session.GetString("AccessToken");
@@ -22,8 +22,8 @@ namespace SIGCAP_TSC.Controllers
             var token = GetToken();
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
 
-            var salones = await _salonesService.GetAllAsync(token);
-            return View(salones);
+            var personal = await _personalService.GetAllAsync(token);
+            return View(personal);
         }
 
         public async Task<IActionResult> Form(int? id)
@@ -31,11 +31,11 @@ namespace SIGCAP_TSC.Controllers
             var token = GetToken();
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
 
-            SalonViewModel viewModel = new SalonViewModel();
+            PersonalViewModel viewModel = new PersonalViewModel();
 
             if (id.HasValue && id.Value > 0)
             {
-                viewModel = await _salonesService.GetByIdAsync(id.Value, token);
+                viewModel = await _personalService.GetByIdAsync(id.Value, token);
                 if (viewModel == null) return NotFound();
             }
 
@@ -43,12 +43,11 @@ namespace SIGCAP_TSC.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Save(SalonViewModel model)
+        public async Task<IActionResult> Save(PersonalViewModel model)
         {
             var token = GetToken();
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
 
-            // Validar modelo usando las reglas de DataAnnotations en C#
             if (!ModelState.IsValid)
             {
                 ViewBag.Error = "Verifica los datos del formulario.";
@@ -57,21 +56,22 @@ namespace SIGCAP_TSC.Controllers
 
             bool success = false;
             
-            if (model.id_salon.HasValue && model.id_salon.Value > 0)
+            if (model.id_personal.HasValue && model.id_personal.Value > 0)
             {
-                success = await _salonesService.UpdateAsync(model.id_salon.Value, model, token);
+                success = await _personalService.UpdateAsync(model.id_personal.Value, model, token);
             }
             else
             {
-                success = await _salonesService.CreateAsync(model, token);
+                success = await _personalService.CreateAsync(model, token);
             }
 
             if (success)
             {
+                TempData["Success"] = "Personal guardado correctamente.";
                 return RedirectToAction("Index");
             }
             
-            ViewBag.Error = "Ocurrió un error al intentar guardar el salón.";
+            ViewBag.Error = "Ocurrió un error al intentar guardar. Verifica si la identificación ya existe.";
             return View("Form", model);
         }
 
@@ -81,7 +81,12 @@ namespace SIGCAP_TSC.Controllers
             var token = GetToken();
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
 
-            await _salonesService.DeleteAsync(id, token);
+            bool success = await _personalService.DeleteAsync(id, token);
+            if (success) {
+                TempData["Success"] = "Personal eliminado correctamente.";
+            } else {
+                TempData["Error"] = "Ocurrió un error al eliminar el personal.";
+            }
             return RedirectToAction("Index");
         }
     }
