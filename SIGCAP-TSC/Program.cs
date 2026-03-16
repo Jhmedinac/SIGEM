@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -41,6 +41,10 @@ builder.Services.AddHttpClient<SIGCAP_TSC.Services.FacilitadoresService>(client 
     client.BaseAddress = new Uri(baseUrl);
 });
 builder.Services.AddHttpClient<SIGCAP_TSC.Services.InscripcionesService>(client => 
+{
+    client.BaseAddress = new Uri(baseUrl);
+});
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.AsistenciaService>(client => 
 {
     client.BaseAddress = new Uri(baseUrl);
 });

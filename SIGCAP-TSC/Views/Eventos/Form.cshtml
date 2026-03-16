@@ -30,6 +30,21 @@
                     <i data-lucide="alert-circle" class="h-4 w-4 flex-shrink-0"></i> @ViewBag.Error
                 </div>
             }
+            @if (ViewBag.TieneSesiones == true)
+            {
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-4 mb-4 rounded-r-lg">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i data-lucide="lock" class="h-5 w-5 text-amber-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-amber-700">
+                                <strong>Edición Limitada:</strong> Este evento ya tiene sesiones de asistencia programadas. Las fechas del evento no pueden ser modificadas para evitar pérdida de datos o inconsistencias.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
 
             <!-- Nombre -->
             <div>
@@ -115,14 +130,28 @@
 
                 <!-- Fecha Inicio -->
                 <div>
-                    <label asp-for="Evento.fecha_inicio" class="block text-sm font-medium text-gray-700 mb-1">Fecha Inicio *</label>
-                    <input asp-for="Evento.fecha_inicio" type="date" required class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                    <label asp-for="Evento.fecha_inicio" class="block text-sm font-medium text-gray-700 mb-1">Fecha de Inicio *</label>
+                    @if (ViewBag.TieneSesiones == true)
+                    {
+                        <input asp-for="Evento.fecha_inicio" type="datetime-local" readonly class="w-full bg-gray-100 cursor-not-allowed rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-500" />
+                    }
+                    else
+                    {
+                        <input asp-for="Evento.fecha_inicio" type="datetime-local" required class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                    }
                 </div>
 
                 <!-- Fecha Fin -->
                 <div>
-                    <label asp-for="Evento.fecha_fin" class="block text-sm font-medium text-gray-700 mb-1">Fecha Fin *</label>
-                    <input asp-for="Evento.fecha_fin" type="date" required class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                    <label asp-for="Evento.fecha_fin" class="block text-sm font-medium text-gray-700 mb-1">Fecha de Finalización *</label>
+                    @if (ViewBag.TieneSesiones == true)
+                    {
+                        <input asp-for="Evento.fecha_fin" type="datetime-local" readonly class="w-full bg-gray-100 cursor-not-allowed rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-500" />
+                    }
+                    else
+                    {
+                        <input asp-for="Evento.fecha_fin" type="datetime-local" required class="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm focus:ring-indigo-500 focus:border-indigo-500" />
+                    }
                 </div>
             </div>
 

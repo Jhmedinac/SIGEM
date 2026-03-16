@@ -9,10 +9,12 @@ namespace SIGCAP_TSC.Controllers
     public class EventosController : Controller
     {
         private readonly EventosService _eventosService;
+        private readonly AsistenciaService _asistenciaService;
 
-        public EventosController(EventosService eventosService)
+        public EventosController(EventosService eventosService, AsistenciaService asistenciaService)
         {
             _eventosService = eventosService;
+            _asistenciaService = asistenciaService;
         }
 
         private string GetToken() => HttpContext.Session.GetString("AccessToken");
@@ -52,9 +54,14 @@ namespace SIGCAP_TSC.Controllers
             {
                 viewModel.Evento = await _eventosService.GetByIdAsync(id.Value, token);
                 if (viewModel.Evento == null) return NotFound();
+
+                // Verificar si tiene sesiones existentes
+                var sesiones = await _asistenciaService.GetSesionesByEventoAsync(id.Value, token);
+                ViewBag.TieneSesiones = sesiones != null && sesiones.Any();
             }
             else
             {
+                ViewBag.TieneSesiones = false;
                 viewModel.Evento = new EventoViewModel 
                 { 
                     id_estado = 1, // Por defecto BORRADOR
@@ -143,6 +150,91 @@ namespace SIGCAP_TSC.Controllers
             var success = await _eventosService.DeleteAsync(id, token);
             // TODO: Agregar TempData message si falla
             return RedirectToAction("Index");
+        }
+
+        // ===== REPORTE DE PARTICIPANTES =====
+        public async Task<IActionResult> Participantes(int id)
+        {
+            var token = GetToken();
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
+
+            var reporte = await _eventosService.GetParticipantesReporteAsync(id, token);
+            if (reporte == null) return NotFound();
+
+            var viewModel = new EventoParticipantesViewModel
+            {
+                Evento = reporte.evento,
+                Participantes = reporte.participantes,
+                Total = reporte.total,
+                EstadosList = await _eventosService.GetEstadosAsync(token),
+                FacilitadoresList = await _eventosService.GetFacilitadoresAsync(token),
+                SalonesList = await _eventosService.GetSalonesAsync(token)
+            };
+
+            return View(viewModel);
+        }
+
+        public async Task<IActionResult> ExportarParticipantesCsv(int id)
+        {
+            var token = GetToken();
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
+
+            var reporte = await _eventosService.GetParticipantesReporteAsync(id, token);
+            if (reporte == null) return NotFound();
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("No.,Identificación,Nombres,Apellidos,Email,Fecha Inscripción,Estado,Nota Final");
+            
+            int row = 1;
+            foreach (var p in reporte.participantes)
+            {
+                var fecha = p.fecha_inscripcion?.ToString("yyyy-MM-dd") ?? "";
+                var nota = p.nota_final?.ToString("F2") ?? "";
+                sb.AppendLine($"{row},\"{p.identificacion}\",\"{p.nombres}\",\"{p.apellidos}\",\"{p.email}\",{fecha},{p.estado_inscripcion},{nota}");
+                row++;
+            }
+
+            var fileName = $"Participantes_{reporte.evento?.codigo_evento ?? "evento"}_{DateTime.Now:yyyyMMdd}.csv";
+            var bytes = System.Text.Encoding.UTF8.GetPreamble().Concat(System.Text.Encoding.UTF8.GetBytes(sb.ToString())).ToArray();
+            return File(bytes, "text/csv; charset=utf-8", fileName);
+        }
+
+        // ===== REPOSITORIO HISTÓRICO =====
+        public async Task<IActionResult> Historico()
+        {
+            var token = GetToken();
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
+
+            var eventos = await _eventosService.GetHistoricoAsync(token);
+
+            ViewBag.Tipos = await _eventosService.GetTiposAsync(token);
+            ViewBag.Modalidades = await _eventosService.GetModalidadesAsync(token);
+            ViewBag.Estados = await _eventosService.GetEstadosAsync(token);
+            ViewBag.Salones = await _eventosService.GetSalonesAsync(token);
+            ViewBag.Facilitadores = await _eventosService.GetFacilitadoresAsync(token);
+
+            return View(eventos);
+        }
+
+        public async Task<IActionResult> HistoricoDetalle(int id)
+        {
+            var token = GetToken();
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
+
+            var reporte = await _eventosService.GetParticipantesReporteAsync(id, token);
+            if (reporte == null) return NotFound();
+
+            var viewModel = new EventoParticipantesViewModel
+            {
+                Evento = reporte.evento,
+                Participantes = reporte.participantes,
+                Total = reporte.total,
+                EstadosList = await _eventosService.GetEstadosAsync(token),
+                FacilitadoresList = await _eventosService.GetFacilitadoresAsync(token),
+                SalonesList = await _eventosService.GetSalonesAsync(token)
+            };
+
+            return View(viewModel);
         }
     }
 }

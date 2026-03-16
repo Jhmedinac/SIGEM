@@ -57,6 +57,18 @@ namespace SIGCAP_TSC.Services
             return JsonConvert.DeserializeObject<EventoViewModel>(apiResponse.data.ToString());
         }
 
+        public async Task<(bool Success, string? ErrorMessage)> GenerarSesionesAsync(int idEvento, string token)
+        {
+            ConfigurarAuth(token);
+            var response = await _httpClient.PostAsync($"eventos/{idEvento}/generar-sesiones", null);
+            
+            if (response.IsSuccessStatusCode) return (true, null);
+            
+            var responseBody = await response.Content.ReadAsStringAsync();
+            dynamic? errorRes = JsonConvert.DeserializeObject(responseBody);
+            return (false, errorRes?.message?.ToString() ?? "Error interno del servidor al generar sesiones");
+        }
+
         public async Task<(bool Success, string? ErrorMessage)> CreateAsync(EventoViewModel evento, string token)
         {
             ConfigurarAuth(token);
@@ -162,6 +174,47 @@ namespace SIGCAP_TSC.Services
             var json = await response.Content.ReadAsStringAsync();
             dynamic apiRes = JsonConvert.DeserializeObject(json);
             return JsonConvert.DeserializeObject<List<FacilitadorBasicoViewModel>>(apiRes.data.ToString()) ?? new List<FacilitadorBasicoViewModel>();
+        }
+
+        public async Task<List<EventoViewModel>> GetHistoricoAsync(string token)
+        {
+            ConfigurarAuth(token);
+            var response = await _httpClient.GetAsync("eventos/historico");
+            if (!response.IsSuccessStatusCode) return new List<EventoViewModel>();
+
+            var json = await response.Content.ReadAsStringAsync();
+            try
+            {
+                dynamic? apiResponse = JsonConvert.DeserializeObject(json);
+                if (apiResponse?.data == null) return new List<EventoViewModel>();
+                var list = JsonConvert.DeserializeObject<List<EventoViewModel>>(apiResponse.data.ToString());
+                return list ?? new List<EventoViewModel>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("ERROR DESERIALIZING HISTORICO: " + ex.Message);
+                return new List<EventoViewModel>();
+            }
+        }
+
+        public async Task<ParticipantesReporteResponse> GetParticipantesReporteAsync(int idEvento, string token)
+        {
+            ConfigurarAuth(token);
+            var response = await _httpClient.GetAsync($"eventos/{idEvento}/participantes-reporte");
+            if (!response.IsSuccessStatusCode) return null;
+
+            var json = await response.Content.ReadAsStringAsync();
+            try
+            {
+                dynamic? apiResponse = JsonConvert.DeserializeObject(json);
+                if (apiResponse?.data == null) return null;
+                return JsonConvert.DeserializeObject<ParticipantesReporteResponse>(apiResponse.data.ToString());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("ERROR DESERIALIZING PARTICIPANTES REPORTE: " + ex.Message);
+                return null;
+            }
         }
     }
 }

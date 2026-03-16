@@ -1,0 +1,12 @@
+{
+    "Logging": {
+        "LogLevel": {
+            "Default": "Debug",
+            "Microsoft.AspNetCore": "Information"
+        }
+    },
+    "AllowedHosts": "*",
+    "ApiSettings": {
+        "BaseUrl": "https://sigcap-qa.tsc.gob.hn:8020/api/v1"
+    }
+}

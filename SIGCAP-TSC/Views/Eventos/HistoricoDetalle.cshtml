@@ -1,0 +1,167 @@
+@model SIGCAP_TSC.Models.Eventos.EventoParticipantesViewModel
+@{
+    ViewData["Title"] = "Detalle Histórico";
+    var estados = Model.EstadosList;
+    var facilitadores = Model.FacilitadoresList;
+    var salones = Model.SalonesList;
+    
+    string GetNombreEstado(int? id) => estados?.FirstOrDefault(e => e.Id == id)?.Nombre ?? "DESCONOCIDO";
+    string GetNombreFacilitador(int? id) => facilitadores?.FirstOrDefault(f => f.id_facilitador == id)?.DisplayName ?? "-";
+    string GetNombreSalon(int? id) => salones?.FirstOrDefault(s => s.id_salon == id)?.DisplayName ?? "-";
+
+    string estadoClass = Model.Evento?.id_estado switch
+    {
+        4 => "bg-indigo-100 text-indigo-700",
+        5 => "bg-red-100 text-red-600",
+        _ => "bg-gray-100 text-gray-600"
+    };
+}
+
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center flex-wrap gap-3">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <i data-lucide="archive" class="h-7 w-7 text-indigo-600"></i>
+                Detalle de Evento Histórico
+            </h1>
+            <p class="text-gray-500 text-sm mt-1">Consulta de evento finalizado — Solo lectura</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="@Url.Action("ExportarParticipantesCsv", new { id = Model.Evento.id_evento })" 
+               class="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition shadow-sm text-sm font-medium">
+                <i data-lucide="download" class="h-4 w-4"></i> Exportar CSV
+            </a>
+            <a href="@Url.Action("Historico")" 
+               class="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition text-sm font-medium">
+                <i data-lucide="arrow-left" class="h-4 w-4"></i> Volver al Histórico
+            </a>
+        </div>
+    </div>
+
+    <!-- Event Info Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div class="flex items-start justify-between mb-4">
+            <div>
+                <span class="px-2.5 py-1 rounded-full text-xs font-semibold @estadoClass">
+                    @GetNombreEstado(Model.Evento?.id_estado)
+                </span>
+            </div>
+        </div>
+        
+        <h2 class="text-xl font-bold text-gray-900 mb-1">@Model.Evento?.nombre_evento</h2>
+        <p class="text-xs text-gray-400 font-mono uppercase tracking-wider mb-5">@Model.Evento?.codigo_evento</p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-gray-50 p-3 rounded-lg">
+                <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Fechas</p>
+                <p class="text-sm text-gray-700 flex items-center gap-1">
+                    <i data-lucide="calendar" class="h-4 w-4 text-indigo-400"></i>
+                    @(Model.Evento?.fecha_inicio?.ToShortDateString() ?? "-") &rarr; @(Model.Evento?.fecha_fin?.ToShortDateString() ?? "-")
+                </p>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-lg">
+                <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Facilitador</p>
+                <p class="text-sm text-gray-700 flex items-center gap-1">
+                    <i data-lucide="user" class="h-4 w-4 text-indigo-400"></i>
+                    @GetNombreFacilitador(Model.Evento?.id_facilitador)
+                </p>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-lg">
+                <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Salón</p>
+                <p class="text-sm text-gray-700 flex items-center gap-1">
+                    <i data-lucide="building" class="h-4 w-4 text-indigo-400"></i>
+                    @GetNombreSalon(Model.Evento?.id_salon)
+                </p>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-lg">
+                <p class="text-xs text-gray-400 uppercase font-semibold mb-1">Cupo</p>
+                <p class="text-sm text-gray-700 flex items-center gap-1">
+                    <i data-lucide="users" class="h-4 w-4 text-indigo-400"></i>
+                    <strong>@(Model.Evento?.cupo_actual ?? 0)</strong> / @(Model.Evento?.cupo_maximo ?? 0) inscritos
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Participants Section -->
+    <div class="flex items-center gap-3">
+        <div class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+            <i data-lucide="users" class="h-4 w-4"></i>
+            Participantes inscritos: <strong>@Model.Total</strong>
+        </div>
+    </div>
+
+    <div class="bg-white shadow-lg rounded-xl border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50 border-b border-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 font-semibold">No.</th>
+                        <th class="px-6 py-4 font-semibold">Identificación</th>
+                        <th class="px-6 py-4 font-semibold">Nombre Completo</th>
+                        <th class="px-6 py-4 font-semibold">Email</th>
+                        <th class="px-6 py-4 font-semibold">Fecha Inscripción</th>
+                        <th class="px-6 py-4 font-semibold">Estado</th>
+                        <th class="px-6 py-4 font-semibold text-center">Nota</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @if (Model.Participantes != null && Model.Participantes.Any())
+                    {
+                        int idx = 1;
+                        foreach (var p in Model.Participantes)
+                        {
+                            string estadoColor = p.codigo_estado switch
+                            {
+                                "INS" => "bg-blue-100 text-blue-700",
+                                "APR" => "bg-green-100 text-green-700",
+                                "REP" => "bg-red-100 text-red-700",
+                                "CAN" => "bg-gray-100 text-gray-600",
+                                _ => "bg-gray-100 text-gray-600"
+                            };
+
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4 font-medium text-gray-500">@idx</td>
+                                <td class="px-6 py-4">
+                                    <span class="font-mono text-gray-700">@p.identificacion</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="font-medium text-gray-900">@p.nombre_participante</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="text-gray-600">@p.email</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @(p.fecha_inscripcion?.ToString("dd/MM/yyyy") ?? "-")
+                                </td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium @estadoColor">
+                                        @p.estado_inscripcion
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    @(p.nota_final?.ToString("F2") ?? "-")
+                                </td>
+                            </tr>
+                            idx++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="bg-gray-50 p-3 rounded-full mb-3">
+                                        <i data-lucide="inbox" class="h-6 w-6 text-gray-400"></i>
+                                    </div>
+                                    <p class="text-sm font-medium">No hubo participantes inscritos en este evento.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
