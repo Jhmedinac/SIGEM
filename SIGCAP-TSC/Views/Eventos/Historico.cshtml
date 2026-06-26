@@ -43,6 +43,45 @@
         <span>Los eventos en este repositorio son de <strong>solo consulta</strong>. No se pueden editar, eliminar ni inscribir nuevos participantes.</span>
     </div>
 
+    <!-- Exportador Mensual (Excel) -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        <h3 class="text-sm font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <i data-lucide="file-spreadsheet" class="h-5 w-5 text-emerald-600"></i>
+            Reporte Consolidado Mensual (DEFORP)
+        </h3>
+        <form method="get" action="@Url.Action("ExportarReporteMensualExcel")" class="flex items-end gap-4 flex-wrap">
+            <div class="w-full sm:w-44">
+                <label for="mes" class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Mes</label>
+                <select name="mes" id="mes" required class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-indigo-600 outline-none text-sm bg-white">
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+            </div>
+            <div class="w-full sm:w-36">
+                <label for="anio" class="block text-xs font-semibold text-gray-500 mb-1.5 uppercase">Año</label>
+                <select name="anio" id="anio" required class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-1 focus:ring-indigo-600 outline-none text-sm bg-white">
+                    @for (int y = DateTime.Now.Year - 2; y <= DateTime.Now.Year + 1; y++)
+                    {
+                        <!option value="@y" @(y == DateTime.Now.Year ? "selected" : "")>@y</!option>
+                    }
+                </select>
+            </div>
+            <button type="submit" class="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2 rounded-lg hover:bg-emerald-700 transition shadow-sm text-sm font-semibold h-[38px]">
+                <i data-lucide="download" class="h-4 w-4"></i> Descargar Excel
+            </button>
+        </form>
+    </div>
+
     @if (Model == null || !Model.Any())
     {
         <div class="text-center py-16 bg-gray-50 rounded-xl border border-dashed border-gray-200 mt-6">

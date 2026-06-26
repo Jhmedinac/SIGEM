@@ -10,11 +10,13 @@ namespace SIGCAP_TSC.Controllers
     {
         private readonly EventosService _eventosService;
         private readonly AsistenciaService _asistenciaService;
+        private readonly InscripcionesService _inscripcionesService;
 
-        public EventosController(EventosService eventosService, AsistenciaService asistenciaService)
+        public EventosController(EventosService eventosService, AsistenciaService asistenciaService, InscripcionesService inscripcionesService)
         {
             _eventosService = eventosService;
             _asistenciaService = asistenciaService;
+            _inscripcionesService = inscripcionesService;
         }
 
         private string GetToken() => HttpContext.Session.GetString("AccessToken");
@@ -199,6 +201,42 @@ namespace SIGCAP_TSC.Controllers
             return File(bytes, "text/csv; charset=utf-8", fileName);
         }
 
+        public async Task<IActionResult> ExportarAsistenciaExcel(int id)
+        {
+            var token = GetToken();
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
+
+            var fileBytes = await _eventosService.GetAsistenciaExcelAsync(id, token);
+            if (fileBytes == null) return NotFound("No se pudo generar el reporte de asistencia.");
+
+            var fileName = $"Asistencia_Evento_{id}_{DateTime.Now:yyyyMMdd}.xlsx";
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+
+        public async Task<IActionResult> ExportarCalificacionesExcel(int id)
+        {
+            var token = GetToken();
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
+
+            var fileBytes = await _eventosService.GetCalificacionesExcelAsync(id, token);
+            if (fileBytes == null) return NotFound("No se pudo generar el reporte de calificaciones.");
+
+            var fileName = $"Calificaciones_Evento_{id}_{DateTime.Now:yyyyMMdd}.xlsx";
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+
+        public async Task<IActionResult> ExportarReporteMensualExcel(int mes, int anio)
+        {
+            var token = GetToken();
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
+
+            var fileBytes = await _eventosService.GetMensualExcelAsync(mes, anio, token);
+            if (fileBytes == null) return NotFound("No se pudo generar el reporte consolidado.");
+
+            var fileName = $"Reporte_Mensual_{mes}_{anio}_{DateTime.Now:yyyyMMdd}.xlsx";
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        }
+
         // ===== REPOSITORIO HISTÓRICO =====
         public async Task<IActionResult> Historico()
         {
@@ -236,5 +274,56 @@ namespace SIGCAP_TSC.Controllers
 
             return View(viewModel);
         }
+
+        // ===== GUARDAR NOTAS INLINE =====
+        [HttpPost]
+        public async Task<IActionResult> GuardarNota([FromBody] GuardarNotaRequest request)
+        {
+            var token = GetToken();
+            if (string.IsNullOrEmpty(token))
+                return Json(new { success = false, message = "Sesión expirada" });
+
+            var result = await _inscripcionesService.UpdateNotaAsync(
+                request.id_inscripcion, 
+                request.nota_final, 
+                request.id_estado_inscripcion, 
+                token);
+
+            return Json(new { success = result.Success, message = result.Success ? "Nota guardada" : result.ErrorMessage });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GuardarNotasMasivas([FromBody] List<GuardarNotaRequest> notas)
+        {
+            var token = GetToken();
+            if (string.IsNullOrEmpty(token))
+                return Json(new { success = false, message = "Sesión expirada" });
+
+            int exitosas = 0;
+            int fallidas = 0;
+
+            foreach (var nota in notas)
+            {
+                var result = await _inscripcionesService.UpdateNotaAsync(
+                    nota.id_inscripcion, 
+                    nota.nota_final, 
+                    nota.id_estado_inscripcion, 
+                    token);
+                if (result.Success) exitosas++;
+                else fallidas++;
+            }
+
+            return Json(new { 
+                success = fallidas == 0, 
+                message = $"{exitosas} nota(s) guardada(s) exitosamente." + (fallidas > 0 ? $" {fallidas} fallida(s)." : "") 
+            });
+        }
+    }
+
+    public class GuardarNotaRequest
+    {
+        public int id_inscripcion { get; set; }
+        public decimal? nota_final { get; set; }
+        public int id_estado_inscripcion { get; set; }
     }
 }

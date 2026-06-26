@@ -32,6 +32,14 @@
                class="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition shadow-sm text-sm font-medium">
                 <i data-lucide="download" class="h-4 w-4"></i> Exportar CSV
             </a>
+            <a href="@Url.Action("ExportarAsistenciaExcel", new { id = Model.Evento.id_evento })" 
+               class="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition shadow-sm text-sm font-medium">
+                <i data-lucide="file-spreadsheet" class="h-4 w-4"></i> Asistencia Excel
+            </a>
+            <a href="@Url.Action("ExportarCalificacionesExcel", new { id = Model.Evento.id_evento })" 
+               class="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition shadow-sm text-sm font-medium">
+                <i data-lucide="award" class="h-4 w-4"></i> Calificaciones Excel
+            </a>
             <a href="@Url.Action("Historico")" 
                class="flex items-center gap-2 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition text-sm font-medium">
                 <i data-lucide="arrow-left" class="h-4 w-4"></i> Volver al Histórico

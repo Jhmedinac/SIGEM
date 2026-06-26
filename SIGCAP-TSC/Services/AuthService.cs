@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System.Text;
 using SIGCAP_TSC.Models.Auth;
 namespace SIGCAP_TSC.Services
@@ -12,9 +12,9 @@ namespace SIGCAP_TSC.Services
             _httpClient = httpClient;
         }
 
-        public async Task<LoginResult> LoginAsync(string usuario, string password)
+        public async Task<LoginResult> LoginAsync(string usuario, string password, string authType)
         {
-            var loginData = new { username = usuario, password = password };
+            var loginData = new { username = usuario, password = password, authType = authType };
             var content = new StringContent(JsonConvert.SerializeObject(loginData), Encoding.UTF8, "application/json");
 
             try

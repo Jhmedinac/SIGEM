@@ -216,5 +216,29 @@ namespace SIGCAP_TSC.Services
                 return null;
             }
         }
+
+        public async Task<byte[]?> GetAsistenciaExcelAsync(int idEvento, string token)
+        {
+            ConfigurarAuth(token);
+            var response = await _httpClient.GetAsync($"reportes/eventos/{idEvento}/asistencia");
+            if (!response.IsSuccessStatusCode) return null;
+            return await response.Content.ReadAsByteArrayAsync();
+        }
+
+        public async Task<byte[]?> GetCalificacionesExcelAsync(int idEvento, string token)
+        {
+            ConfigurarAuth(token);
+            var response = await _httpClient.GetAsync($"reportes/eventos/{idEvento}/calificaciones");
+            if (!response.IsSuccessStatusCode) return null;
+            return await response.Content.ReadAsByteArrayAsync();
+        }
+
+        public async Task<byte[]?> GetMensualExcelAsync(int mes, int anio, string token)
+        {
+            ConfigurarAuth(token);
+            var response = await _httpClient.GetAsync($"reportes/mensual?mes={mes}&anio={anio}");
+            if (!response.IsSuccessStatusCode) return null;
+            return await response.Content.ReadAsByteArrayAsync();
+        }
     }
 }

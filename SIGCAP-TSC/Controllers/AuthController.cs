@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using SIGCAP_TSC.Models.Auth;
 using SIGCAP_TSC.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -34,7 +34,7 @@ namespace SIGCAP_TSC.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            var result = await _authService.LoginAsync(model.Usuario, model.Password);
+            var result = await _authService.LoginAsync(model.Usuario, model.Password, model.AuthType);
             
             if (result.Success)
             {

@@ -66,6 +66,20 @@ namespace SIGCAP_TSC.Services
             return (false, errorRes?.message?.ToString() ?? "Error interno del servidor");
         }
 
+        public async Task<(bool Success, string? ErrorMessage)> UpdateNotaAsync(int id, decimal? notaFinal, int idEstadoInscripcion, string token)
+        {
+            ConfigurarAuth(token);
+            var payload = new { nota_final = notaFinal, id_estado_inscripcion = idEstadoInscripcion };
+            var content = new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json");
+            var response = await _httpClient.PutAsync($"inscripciones/{id}", content);
+
+            if (response.IsSuccessStatusCode) return (true, null);
+
+            var errorJson = await response.Content.ReadAsStringAsync();
+            dynamic? errorRes = JsonConvert.DeserializeObject(errorJson);
+            return (false, errorRes?.message?.ToString() ?? "Error al actualizar la nota.");
+        }
+
         public async Task<bool> DeleteAsync(int id, string token)
         {
             ConfigurarAuth(token);

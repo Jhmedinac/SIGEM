@@ -1,4 +1,4 @@
-﻿@model SIGCAP_TSC.Models.Auth.LoginViewModel
+@model SIGCAP_TSC.Models.Auth.LoginViewModel
 
 @{
     ViewData["Title"] = "Iniciar Sesión";
@@ -21,25 +21,42 @@
         }
 
         <form asp-action="Login" method="post" class="space-y-6">
+            <!-- Segmented Control for Authentication Type -->
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Método de Acceso</label>
+                <div class="grid grid-cols-2 gap-1.5 p-1.5 bg-gray-100 rounded-lg">
+                    <label class="flex justify-center items-center py-2 px-3 text-xs font-semibold rounded-md cursor-pointer transition-all duration-200 text-center select-none" id="label-ad">
+                        <input type="radio" asp-for="AuthType" value="ad" class="sr-only" checked />
+                        <i data-lucide="shield-check" class="h-4 w-4 mr-1.5 text-indigo-500"></i>
+                        Directorio Activo
+                    </label>
+                    <label class="flex justify-center items-center py-2 px-3 text-xs font-semibold rounded-md cursor-pointer transition-all duration-200 text-center select-none" id="label-local">
+                        <input type="radio" asp-for="AuthType" value="local" class="sr-only" />
+                        <i data-lucide="key-round" class="h-4 w-4 mr-1.5 text-gray-400"></i>
+                        Usuario Local
+                    </label>
+                </div>
+            </div>
+
             <div>
                 <label asp-for="Usuario" class="block text-sm font-medium text-gray-700">Usuario</label>
                 <div class="mt-1 relative rounded-md shadow-sm">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i data-lucide="user" class="h-5 w-5 text-gray-400"></i>
                     </div>
-                    <input asp-for="Usuario" required class="block w-full pl-10 rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="admin" />
+                    <input asp-for="Usuario" required class="block w-full pl-10 rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="usuario" />
                 </div>
             </div>
 
             <div>
+                <label asp-for="Password" class="block text-sm font-medium text-gray-700">Contraseña</label>
                 <div class="mt-1 relative rounded-md shadow-sm">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i data-lucide="lock" class="h-5 w-5 text-gray-400"></i>
                     </div>
-                    <label asp-for="Password" class="block text-sm font-medium text-gray-700">Contraseña</label>
                     <input asp-for="Password" required type="password" class="block w-full pl-10 rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="••••••" />
                 </div>
-                <div class="flex items-center justify-between mb-1">
+                <div class="flex items-center justify-between mt-2">
                     <a href="@Url.Action("ForgotPassword", "Auth")" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
                         ¿Olvidaste tu contraseña?
                     </a>
@@ -50,5 +67,38 @@
                 Entrar
             </button>
         </form>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const radAd = document.querySelector('input[value="ad"]');
+                const radLocal = document.querySelector('input[value="local"]');
+                const lblAd = document.getElementById('label-ad');
+                const lblLocal = document.getElementById('label-local');
+
+                function updateTabs() {
+                    if (radAd.checked) {
+                        lblAd.className = "flex justify-center items-center py-2 px-3 text-xs font-semibold rounded-md cursor-pointer transition-all duration-200 text-center select-none bg-white text-indigo-700 shadow-sm border border-gray-200/50";
+                        lblLocal.className = "flex justify-center items-center py-2 px-3 text-xs font-semibold rounded-md cursor-pointer transition-all duration-200 text-center select-none text-gray-500 hover:text-gray-700";
+                        const iconAd = lblAd.querySelector('i');
+                        const iconLocal = lblLocal.querySelector('i');
+                        if (iconAd) iconAd.className = "h-4 w-4 mr-1.5 text-indigo-500";
+                        if (iconLocal) iconLocal.className = "h-4 w-4 mr-1.5 text-gray-400";
+                    } else {
+                        lblAd.className = "flex justify-center items-center py-2 px-3 text-xs font-semibold rounded-md cursor-pointer transition-all duration-200 text-center select-none text-gray-500 hover:text-gray-700";
+                        lblLocal.className = "flex justify-center items-center py-2 px-3 text-xs font-semibold rounded-md cursor-pointer transition-all duration-200 text-center select-none bg-white text-indigo-700 shadow-sm border border-gray-200/50";
+                        const iconAd = lblAd.querySelector('i');
+                        const iconLocal = lblLocal.querySelector('i');
+                        if (iconAd) iconAd.className = "h-4 w-4 mr-1.5 text-gray-400";
+                        if (iconLocal) iconLocal.className = "h-4 w-4 mr-1.5 text-indigo-500";
+                    }
+                }
+
+                if (radAd && radLocal) {
+                    radAd.addEventListener('change', updateTabs);
+                    radLocal.addEventListener('change', updateTabs);
+                    updateTabs();
+                }
+            });
+        </script>
     </div>
 </div>

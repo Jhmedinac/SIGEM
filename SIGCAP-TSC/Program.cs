@@ -55,6 +55,18 @@ builder.Services.AddHttpClient<SIGCAP_TSC.Services.PersonalService>(client =>
     client.BaseAddress = new Uri(baseUrl);
 });
 
+// Registro de GeograficoService
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.GeograficoService>(client =>
+{
+    client.BaseAddress = new Uri(baseUrl);
+});
+
+// Registro de CatalogosService
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.CatalogosService>(client =>
+{
+    client.BaseAddress = new Uri(baseUrl);
+});
+
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {

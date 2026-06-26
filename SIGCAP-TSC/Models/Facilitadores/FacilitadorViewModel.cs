@@ -28,7 +28,7 @@ namespace SIGCAP_TSC.Models.Facilitadores
         [StringLength(50)]
         public string? tipo { get; set; }
 
-        public bool activo { get; set; }
+        public bool activo { get; set; } = true;
         
         public string nombre_completo => string.IsNullOrEmpty(nombres) ? "" : $"{nombres} {apellidos}".Trim();
     }

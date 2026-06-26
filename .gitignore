@@ -48,3 +48,9 @@ logs/
 *.log
 combined.log
 error.log
+
+# Temporary review/scrap folders
+review/
+SIGCAP-TSC/review/
+Documentos/
+

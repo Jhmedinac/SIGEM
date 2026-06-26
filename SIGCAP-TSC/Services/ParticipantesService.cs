@@ -40,20 +40,30 @@ namespace SIGCAP_TSC.Services
             return JsonConvert.DeserializeObject<ParticipanteViewModel>(apiResponse.data.ToString());
         }
 
-        public async Task<bool> CreateAsync(ParticipanteViewModel participante, string token)
+        public async Task<(bool Success, string? ErrorMessage)> CreateAsync(ParticipanteViewModel participante, string token)
         {
             ConfigurarAuth(token);
             var content = new StringContent(JsonConvert.SerializeObject(participante), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync("participantes", content);
-            return response.IsSuccessStatusCode;
+            
+            if (response.IsSuccessStatusCode) return (true, null);
+
+            var errorJson = await response.Content.ReadAsStringAsync();
+            dynamic? errorRes = JsonConvert.DeserializeObject(errorJson);
+            return (false, errorRes?.message?.ToString() ?? "Error al crear el participante.");
         }
 
-        public async Task<bool> UpdateAsync(int id, ParticipanteViewModel participante, string token)
+        public async Task<(bool Success, string? ErrorMessage)> UpdateAsync(int id, ParticipanteViewModel participante, string token)
         {
             ConfigurarAuth(token);
             var content = new StringContent(JsonConvert.SerializeObject(participante), Encoding.UTF8, "application/json");
             var response = await _httpClient.PutAsync($"participantes/{id}", content);
-            return response.IsSuccessStatusCode;
+            
+            if (response.IsSuccessStatusCode) return (true, null);
+
+            var errorJson = await response.Content.ReadAsStringAsync();
+            dynamic? errorRes = JsonConvert.DeserializeObject(errorJson);
+            return (false, errorRes?.message?.ToString() ?? "Error al actualizar el participante.");
         }
 
         public async Task<bool> DeleteAsync(int id, string token)
