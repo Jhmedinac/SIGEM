@@ -27,7 +27,7 @@ namespace SIGCAP_TSC.Services
 
             var jsonResult = await response.Content.ReadAsStringAsync();
             dynamic apiResponse = JsonConvert.DeserializeObject(jsonResult);
-            
+
             // Assuming standard response wrapper { status: "success", data: { ... } }
             var data = apiResponse.data;
             return JsonConvert.DeserializeObject<DashboardStatsViewModel>(data.ToString());

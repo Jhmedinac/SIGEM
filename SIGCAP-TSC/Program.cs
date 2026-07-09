@@ -8,64 +8,24 @@ builder.Services.AddControllersWithViews();
 var baseUrl = builder.Configuration.GetSection("ApiSettings:BaseUrl").Value;
 if (!baseUrl.EndsWith("/")) { baseUrl += "/"; }
 
-builder.Services.AddHttpClient<SIGCAP_TSC.Services.AuthService>(client => 
+Action<HttpClient> configureClient = client =>
 {
     client.BaseAddress = new Uri(baseUrl);
-});
-builder.Services.AddHttpClient<SIGCAP_TSC.Services.DashboardService>(client => 
-{
-    client.BaseAddress = new Uri(baseUrl);
-});
-builder.Services.AddHttpClient<SIGCAP_TSC.Services.EventosService>(client => 
-{
-    client.BaseAddress = new Uri(baseUrl);
-});
-builder.Services.AddHttpClient<SIGCAP_TSC.Services.SalonesService>(client => 
-{
-    client.BaseAddress = new Uri(baseUrl);
-});
-builder.Services.AddHttpClient<SIGCAP_TSC.Services.ParticipantesService>(client => 
-{
-    client.BaseAddress = new Uri(baseUrl);
-});
-builder.Services.AddHttpClient<SIGCAP_TSC.Services.UsuariosService>(client => 
-{
-    client.BaseAddress = new Uri(baseUrl);
-});
-builder.Services.AddHttpClient<SIGCAP_TSC.Services.AlertasService>(client => 
-{
-    client.BaseAddress = new Uri(baseUrl);
-});
-builder.Services.AddHttpClient<SIGCAP_TSC.Services.FacilitadoresService>(client => 
-{
-    client.BaseAddress = new Uri(baseUrl);
-});
-builder.Services.AddHttpClient<SIGCAP_TSC.Services.InscripcionesService>(client => 
-{
-    client.BaseAddress = new Uri(baseUrl);
-});
-builder.Services.AddHttpClient<SIGCAP_TSC.Services.AsistenciaService>(client => 
-{
-    client.BaseAddress = new Uri(baseUrl);
-});
+};
 
-// Registro de PersonalService
-builder.Services.AddHttpClient<SIGCAP_TSC.Services.PersonalService>(client =>
-{
-    client.BaseAddress = new Uri(baseUrl);
-});
-
-// Registro de GeograficoService
-builder.Services.AddHttpClient<SIGCAP_TSC.Services.GeograficoService>(client =>
-{
-    client.BaseAddress = new Uri(baseUrl);
-});
-
-// Registro de CatalogosService
-builder.Services.AddHttpClient<SIGCAP_TSC.Services.CatalogosService>(client =>
-{
-    client.BaseAddress = new Uri(baseUrl);
-});
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.AuthService>(configureClient);
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.DashboardService>(configureClient);
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.EventosService>(configureClient);
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.SalonesService>(configureClient);
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.ParticipantesService>(configureClient);
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.UsuariosService>(configureClient);
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.AlertasService>(configureClient);
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.FacilitadoresService>(configureClient);
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.InscripcionesService>(configureClient);
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.AsistenciaService>(configureClient);
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.PersonalService>(configureClient);
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.GeograficoService>(configureClient);
+builder.Services.AddHttpClient<SIGCAP_TSC.Services.CatalogosService>(configureClient);
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -108,7 +68,8 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Dashboard}/{action=Index}/{id?}");
 
-app.MapGet("/", context => {
+app.MapGet("/", context =>
+{
     context.Response.Redirect("/Dashboard/Index");
     return Task.CompletedTask;
 });

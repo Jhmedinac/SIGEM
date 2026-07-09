@@ -32,8 +32,8 @@ namespace SIGCAP_TSC.Models.Eventos
         public string nombres { get; set; }
         public string apellidos { get; set; }
 
-        public string DisplayName => !string.IsNullOrEmpty(nombres) && !string.IsNullOrEmpty(apellidos) 
-            ? $"{nombres} {apellidos}" 
+        public string DisplayName => !string.IsNullOrEmpty(nombres) && !string.IsNullOrEmpty(apellidos)
+            ? $"{nombres} {apellidos}"
             : nombre_completo ?? $"Facilitador #{id_facilitador}";
     }
 

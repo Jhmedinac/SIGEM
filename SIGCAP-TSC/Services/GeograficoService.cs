@@ -28,7 +28,7 @@ namespace SIGCAP_TSC.Services
             var json = await response.Content.ReadAsStringAsync();
             dynamic? apiResponse = JsonConvert.DeserializeObject(json);
             if (apiResponse == null || apiResponse.data == null) return new List<GeograficoViewModel>();
-            
+
             return JsonConvert.DeserializeObject<List<GeograficoViewModel>>(apiResponse.data.ToString()) ?? new List<GeograficoViewModel>();
         }
 

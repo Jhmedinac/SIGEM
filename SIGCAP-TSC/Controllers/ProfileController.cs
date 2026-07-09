@@ -39,13 +39,13 @@ namespace SIGCAP_TSC.Controllers
             }
 
             var result = await _authService.ChangePasswordAsync(model.Actual, model.Nueva, token);
-            
+
             if (result.Success)
             {
                 TempData["Success"] = result.Message;
                 return RedirectToAction("Index");
             }
-            
+
             ViewBag.Error = result.Message;
             return View("Index", model);
         }

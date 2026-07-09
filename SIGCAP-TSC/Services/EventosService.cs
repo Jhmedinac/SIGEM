@@ -28,7 +28,7 @@ namespace SIGCAP_TSC.Services
             try
             {
                 dynamic? apiResponse = JsonConvert.DeserializeObject(json);
-                if (apiResponse?.data == null) 
+                if (apiResponse?.data == null)
                 {
                     Console.WriteLine("API RESPONSE DATA IS NULL!");
                     Console.WriteLine("JSON: " + json);
@@ -61,9 +61,9 @@ namespace SIGCAP_TSC.Services
         {
             ConfigurarAuth(token);
             var response = await _httpClient.PostAsync($"eventos/{idEvento}/generar-sesiones", null);
-            
+
             if (response.IsSuccessStatusCode) return (true, null);
-            
+
             var responseBody = await response.Content.ReadAsStringAsync();
             dynamic? errorRes = JsonConvert.DeserializeObject(responseBody);
             return (false, errorRes?.message?.ToString() ?? "Error interno del servidor al generar sesiones");
@@ -75,16 +75,16 @@ namespace SIGCAP_TSC.Services
             var jsonBody = JsonConvert.SerializeObject(evento);
             Console.WriteLine($"[CreateAsync] Token (primeros 30 chars): {(token?.Length > 30 ? token.Substring(0, 30) : token)}");
             Console.WriteLine($"[CreateAsync] JSON enviado al API: {jsonBody}");
-            
+
             var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync("eventos", content);
-            
+
             var responseBody = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"[CreateAsync] HTTP Status: {(int)response.StatusCode} {response.StatusCode}");
             Console.WriteLine($"[CreateAsync] Response body: {responseBody}");
-            
+
             if (response.IsSuccessStatusCode) return (true, null);
-            
+
             dynamic? errorRes = JsonConvert.DeserializeObject(responseBody);
             return (false, errorRes?.message?.ToString() ?? "Error interno del servidor");
         }
@@ -94,9 +94,9 @@ namespace SIGCAP_TSC.Services
             ConfigurarAuth(token);
             var content = new StringContent(JsonConvert.SerializeObject(evento), Encoding.UTF8, "application/json");
             var response = await _httpClient.PutAsync($"eventos/{id}", content);
-            
+
             if (response.IsSuccessStatusCode) return (true, null);
-            
+
             var errorJson = await response.Content.ReadAsStringAsync();
             dynamic? errorRes = JsonConvert.DeserializeObject(errorJson);
             return (false, errorRes?.message?.ToString() ?? "Error interno del servidor");

@@ -9,7 +9,7 @@ namespace SIGCAP_TSC.Models.Dashboard
         public int InactiveUsers { get; set; }
         public int ActiveSalones { get; set; }
         public List<DashboardUserViewModel> LatestUsers { get; set; }
-        
+
         // Nuevas Métricas
         public int ActiveEventsCount { get; set; }
         public int UsersInTrainingCount { get; set; }

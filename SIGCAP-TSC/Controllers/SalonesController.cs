@@ -56,7 +56,7 @@ namespace SIGCAP_TSC.Controllers
             }
 
             bool success = false;
-            
+
             if (model.id_salon.HasValue && model.id_salon.Value > 0)
             {
                 success = await _salonesService.UpdateAsync(model.id_salon.Value, model, token);
@@ -70,7 +70,7 @@ namespace SIGCAP_TSC.Controllers
             {
                 return RedirectToAction("Index");
             }
-            
+
             ViewBag.Error = "Ocurrió un error al intentar guardar el salón.";
             return View("Form", model);
         }

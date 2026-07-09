@@ -59,7 +59,7 @@ namespace SIGCAP_TSC.Controllers
             }
 
             bool success = false;
-            
+
             if (model.id_usuario.HasValue && model.id_usuario.Value > 0)
             {
                 success = await _usuariosService.UpdateAsync(model.id_usuario.Value, model, token);
@@ -73,7 +73,7 @@ namespace SIGCAP_TSC.Controllers
             {
                 return RedirectToAction("Index");
             }
-            
+
             ViewBag.Error = "Ocurrió un error al intentar guardar el usuario. Puede que el username ya exista.";
             ViewBag.PersonasDisponibles = await _usuariosService.GetPersonasDisponiblesAsync(token);
             ViewBag.RolesDisponibles = await _usuariosService.GetRolesAsync(token);

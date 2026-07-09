@@ -55,7 +55,7 @@ namespace SIGCAP_TSC.Controllers
             }
 
             bool success = false;
-            
+
             if (model.id_personal.HasValue && model.id_personal.Value > 0)
             {
                 success = await _personalService.UpdateAsync(model.id_personal.Value, model, token);
@@ -70,7 +70,7 @@ namespace SIGCAP_TSC.Controllers
                 TempData["Success"] = "Personal guardado correctamente.";
                 return RedirectToAction("Index");
             }
-            
+
             ViewBag.Error = "Ocurrió un error al intentar guardar. Verifica si la identificación ya existe.";
             return View("Form", model);
         }
@@ -82,9 +82,12 @@ namespace SIGCAP_TSC.Controllers
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
 
             bool success = await _personalService.DeleteAsync(id, token);
-            if (success) {
+            if (success)
+            {
                 TempData["Success"] = "Personal eliminado correctamente.";
-            } else {
+            }
+            else
+            {
                 TempData["Error"] = "Ocurrió un error al eliminar el personal.";
             }
             return RedirectToAction("Index");

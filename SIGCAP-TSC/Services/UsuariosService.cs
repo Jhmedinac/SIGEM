@@ -91,7 +91,7 @@ namespace SIGCAP_TSC.Services
             var data = new { nueva_password = newPassword };
             var content = new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json");
             var response = await _httpClient.PatchAsync($"usuarios/{id}/reset-password", content);
-            
+
             if (response.IsSuccessStatusCode) return null;
 
             var jsonResult = await response.Content.ReadAsStringAsync();
@@ -99,7 +99,7 @@ namespace SIGCAP_TSC.Services
             return errorResponse?.message ?? "Error en el servidor";
         }
 
-         public async Task<bool> ToggleLockAsync(int id, bool isLocked, string token)
+        public async Task<bool> ToggleLockAsync(int id, bool isLocked, string token)
         {
             ConfigurarAuth(token);
             var data = new { is_locked = isLocked };

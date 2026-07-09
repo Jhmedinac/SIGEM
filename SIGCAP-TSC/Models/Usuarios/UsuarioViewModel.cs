@@ -8,7 +8,7 @@ namespace SIGCAP_TSC.Models.Usuarios
         public int id_persona { get; set; }
         public string? PersonaNombre { get; set; } // Data mostrada del JOIN en DB
         public int? id_rol { get; set; }
-        public string? rol_nombre { get; set; } 
+        public string? rol_nombre { get; set; }
         public bool is_locked { get; set; }
         public bool is_deleted { get; set; }
     }

@@ -61,7 +61,7 @@ namespace SIGCAP_TSC.Controllers
 
             bool success = false;
             string? errorMessage = null;
-            
+
             if (model.Inscripcion.id_inscripcion.HasValue && model.Inscripcion.id_inscripcion.Value > 0)
             {
                 var result = await _inscripcionesService.UpdateAsync(model.Inscripcion.id_inscripcion.Value, model.Inscripcion, token);
@@ -79,7 +79,7 @@ namespace SIGCAP_TSC.Controllers
             {
                 return RedirectToAction("Index");
             }
-            
+
             model.EventosList = await _eventosService.GetAllAsync(token);
             model.ParticipantesList = await _participantesService.GetAllAsync(token);
             ViewBag.Error = errorMessage ?? "No se pudo guardar la inscripción. Verifica los datos.";

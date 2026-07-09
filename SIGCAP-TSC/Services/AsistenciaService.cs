@@ -49,8 +49,8 @@ namespace SIGCAP_TSC.Services
             var json = await response.Content.ReadAsStringAsync();
             // --- DEBUG
             Console.WriteLine($"[GetResumenByEventoAsync] JSON from backend for Event {idEvento}: {json}");
-            
-            try 
+
+            try
             {
                 dynamic? apiResponse = JsonConvert.DeserializeObject(json);
                 if (apiResponse?.data == null) return new List<ResumenParticipanteViewModel>();
@@ -98,9 +98,9 @@ namespace SIGCAP_TSC.Services
             var jsonBody = JsonConvert.SerializeObject(payload);
             var content = new StringContent(jsonBody, Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync("asistencia/bulk", content);
-            
+
             if (response.IsSuccessStatusCode) return (true, null);
-            
+
             var responseBody = await response.Content.ReadAsStringAsync();
             dynamic? errorRes = JsonConvert.DeserializeObject(responseBody);
             return (false, errorRes?.message?.ToString() ?? "Error interno del servidor al guardar asistencia");

@@ -28,17 +28,17 @@ namespace SIGCAP_TSC.Controllers
             // Obtener info del evento para el encabezado
             var evento = await _eventosService.GetByIdAsync(id, token);
             if (evento == null) return NotFound("Evento no encontrado");
-            
+
             ViewBag.Evento = evento;
 
             // Obtener resumen de participantes inscritos
             var participantes = await _asistenciaService.GetResumenByEventoAsync(id, token);
-            
+
             // Obtener sesiones para poder ir a tomar asistencia
             var sesiones = await _asistenciaService.GetSesionesByEventoAsync(id, token);
 
             ViewBag.Sesiones = sesiones;
-            
+
             return View(participantes);
         }
 
@@ -49,7 +49,7 @@ namespace SIGCAP_TSC.Controllers
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
 
             var result = await _eventosService.GenerarSesionesAsync(idEvento, token);
-            
+
             if (result.Success)
             {
                 TempData["SuccessMessage"] = "Sesiones generadas correctamente.";
@@ -112,7 +112,7 @@ namespace SIGCAP_TSC.Controllers
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth");
 
             var result = await _asistenciaService.BulkUpsertAsync(model, token);
-            
+
             if (result.Success)
             {
                 TempData["SuccessMessage"] = "Asistencia guardada correctamente.";
@@ -121,10 +121,10 @@ namespace SIGCAP_TSC.Controllers
 
             // En caso de error, recargar la vista con el error
             ViewBag.Error = result.ErrorMessage;
-            
+
             var evento = await _eventosService.GetByIdAsync(model.id_evento, token);
             ViewBag.Evento = evento;
-            
+
             var sesiones = await _asistenciaService.GetSesionesByEventoAsync(model.id_evento, token);
             ViewBag.Sesion = sesiones.FirstOrDefault(s => s.id_sesion == model.id_sesion);
 

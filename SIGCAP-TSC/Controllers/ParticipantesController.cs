@@ -83,7 +83,7 @@ namespace SIGCAP_TSC.Controllers
 
             bool success = false;
             string? errorMessage = null;
-            
+
             if (model.id_persona.HasValue && model.id_persona.Value > 0)
             {
                 var result = await _participantesService.UpdateAsync(model.id_persona.Value, model, token);
@@ -101,7 +101,7 @@ namespace SIGCAP_TSC.Controllers
             {
                 return RedirectToAction("Index");
             }
-            
+
             ViewBag.Error = errorMessage ?? "Ocurrió un error al intentar guardar el participante.";
             return View("Form", model);
         }

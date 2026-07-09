@@ -64,8 +64,8 @@ namespace SIGCAP_TSC.Controllers
             else
             {
                 ViewBag.TieneSesiones = false;
-                viewModel.Evento = new EventoViewModel 
-                { 
+                viewModel.Evento = new EventoViewModel
+                {
                     id_estado = 1, // Por defecto BORRADOR
                     cupo_maximo = 20
                 };
@@ -109,7 +109,7 @@ namespace SIGCAP_TSC.Controllers
 
             bool success = false;
             string? errorMessage = null;
-            
+
             if (model.Evento.id_evento.HasValue && model.Evento.id_evento.Value > 0)
             {
                 Console.WriteLine($"[Save] Updating evento ID={model.Evento.id_evento.Value}");
@@ -131,7 +131,7 @@ namespace SIGCAP_TSC.Controllers
             {
                 return RedirectToAction("Index");
             }
-            
+
             // Si hubo error, recargamos el form
             model.TiposList = await _eventosService.GetTiposAsync(token);
             model.ModalidadesList = await _eventosService.GetModalidadesAsync(token);
@@ -186,7 +186,7 @@ namespace SIGCAP_TSC.Controllers
 
             var sb = new System.Text.StringBuilder();
             sb.AppendLine("No.,Identificación,Nombres,Apellidos,Email,Fecha Inscripción,Estado,Nota Final");
-            
+
             int row = 1;
             foreach (var p in reporte.participantes)
             {
@@ -284,9 +284,9 @@ namespace SIGCAP_TSC.Controllers
                 return Json(new { success = false, message = "Sesión expirada" });
 
             var result = await _inscripcionesService.UpdateNotaAsync(
-                request.id_inscripcion, 
-                request.nota_final, 
-                request.id_estado_inscripcion, 
+                request.id_inscripcion,
+                request.nota_final,
+                request.id_estado_inscripcion,
                 token);
 
             return Json(new { success = result.Success, message = result.Success ? "Nota guardada" : result.ErrorMessage });
@@ -305,17 +305,18 @@ namespace SIGCAP_TSC.Controllers
             foreach (var nota in notas)
             {
                 var result = await _inscripcionesService.UpdateNotaAsync(
-                    nota.id_inscripcion, 
-                    nota.nota_final, 
-                    nota.id_estado_inscripcion, 
+                    nota.id_inscripcion,
+                    nota.nota_final,
+                    nota.id_estado_inscripcion,
                     token);
                 if (result.Success) exitosas++;
                 else fallidas++;
             }
 
-            return Json(new { 
-                success = fallidas == 0, 
-                message = $"{exitosas} nota(s) guardada(s) exitosamente." + (fallidas > 0 ? $" {fallidas} fallida(s)." : "") 
+            return Json(new
+            {
+                success = fallidas == 0,
+                message = $"{exitosas} nota(s) guardada(s) exitosamente." + (fallidas > 0 ? $" {fallidas} fallida(s)." : "")
             });
         }
     }

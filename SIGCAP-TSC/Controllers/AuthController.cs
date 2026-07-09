@@ -35,7 +35,7 @@ namespace SIGCAP_TSC.Controllers
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             var result = await _authService.LoginAsync(model.Usuario, model.Password, model.AuthType);
-            
+
             if (result.Success)
             {
                 var claims = new List<Claim>
@@ -81,7 +81,7 @@ namespace SIGCAP_TSC.Controllers
             }
 
             var result = await _authService.ForgotPasswordAsync(email);
-            
+
             // Según la API node devuelve "Si el correo existe, recibirá instrucciones."
             if (result.Success || result.ErrorMessage == "Si el correo existe, recibirá instrucciones.")
             {
@@ -125,7 +125,7 @@ namespace SIGCAP_TSC.Controllers
             }
 
             var result = await _authService.ResetPasswordAsync(token, newPassword);
-            
+
             if (result.Success || result.ErrorMessage == "Contraseña actualizada correctamente")
             {
                 ViewBag.Success = "Contraseña actualizada con éxito. Ya puedes volver e iniciar sesión.";

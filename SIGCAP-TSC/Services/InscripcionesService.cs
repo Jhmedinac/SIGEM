@@ -45,9 +45,9 @@ namespace SIGCAP_TSC.Services
             ConfigurarAuth(token);
             var content = new StringContent(JsonConvert.SerializeObject(inscripcion), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync("inscripciones", content);
-            
+
             if (response.IsSuccessStatusCode) return (true, null);
-            
+
             var errorJson = await response.Content.ReadAsStringAsync();
             dynamic? errorRes = JsonConvert.DeserializeObject(errorJson);
             return (false, errorRes?.message?.ToString() ?? "Error interno del servidor");
@@ -58,9 +58,9 @@ namespace SIGCAP_TSC.Services
             ConfigurarAuth(token);
             var content = new StringContent(JsonConvert.SerializeObject(inscripcion), Encoding.UTF8, "application/json");
             var response = await _httpClient.PutAsync($"inscripciones/{id}", content);
-            
+
             if (response.IsSuccessStatusCode) return (true, null);
-            
+
             var errorJson = await response.Content.ReadAsStringAsync();
             dynamic? errorRes = JsonConvert.DeserializeObject(errorJson);
             return (false, errorRes?.message?.ToString() ?? "Error interno del servidor");

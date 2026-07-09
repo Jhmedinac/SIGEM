@@ -45,7 +45,7 @@ namespace SIGCAP_TSC.Services
             ConfigurarAuth(token);
             var content = new StringContent(JsonConvert.SerializeObject(participante), Encoding.UTF8, "application/json");
             var response = await _httpClient.PostAsync("participantes", content);
-            
+
             if (response.IsSuccessStatusCode) return (true, null);
 
             var errorJson = await response.Content.ReadAsStringAsync();
@@ -58,7 +58,7 @@ namespace SIGCAP_TSC.Services
             ConfigurarAuth(token);
             var content = new StringContent(JsonConvert.SerializeObject(participante), Encoding.UTF8, "application/json");
             var response = await _httpClient.PutAsync($"participantes/{id}", content);
-            
+
             if (response.IsSuccessStatusCode) return (true, null);
 
             var errorJson = await response.Content.ReadAsStringAsync();

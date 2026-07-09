@@ -1,0 +1,37 @@
+name: Node.js CI
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        cache-dependency-path: './api-backend/package-lock.json'
+        
+    - name: Install dependencies
+      working-directory: ./api-backend
+      run: npm ci
+      
+    # Asumimos que más adelante se agregará el linter a package.json
+    # - name: Run Lint
+    #   working-directory: ./api-backend
+    #   run: npx eslint src/**/*.js
+      
+    # - name: Run tests
+    #   working-directory: ./api-backend
+    #   run: npm test
+    #   env:
+    #     NODE_ENV: test
+    #     DB_SERVER: localhost # Para tests de CI

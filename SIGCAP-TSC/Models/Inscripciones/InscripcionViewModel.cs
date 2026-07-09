@@ -5,13 +5,13 @@ namespace SIGCAP_TSC.Models.Inscripciones
     public class InscripcionViewModel
     {
         public int? id_inscripcion { get; set; }
-        
+
         [Required(ErrorMessage = "El evento es requerido")]
         public int id_evento { get; set; }
-        
+
         [Required(ErrorMessage = "El participante es requerido")]
         public int id_persona { get; set; }
-        
+
         public int id_estado_inscripcion { get; set; } = 1; // Por defecto Activo/Matriculado (Según tu BD)
 
         // Propiedades de lectura para mostrar en la grilla
